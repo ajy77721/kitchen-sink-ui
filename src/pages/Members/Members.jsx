@@ -6,7 +6,7 @@ import { Modal, Button, Form, Input, Select } from 'antd';
 
 const { Option } = Select;
 
-const Dashboard = () => {
+const MemberDashboard = () => {
   const [data, setData] = useState([]);
   const [UserName, setUsername] = useState('Aman Sharma');
 
@@ -127,4 +127,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default MemberDashboard;

@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Modal, Button, Form, Input, Select,message } from 'antd';
+import { Modal, Button, Form, Input, Select, message } from 'antd';
 import "./Login.css";
+import ApiClient from "../../../service/apiclient/AxiosClient";
 const { Option } = Select;
 const Login = () => {
   const [userName, setUserName] = useState("");
@@ -15,11 +16,11 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API}auth/login`, {
-        userName,
-        password,
+      const response = await ApiClient.post(`/auth/login`, {
+        email: userName,
+        password: password
       });
-      const token = response.data.token;
+      const token = response.data.data.token;
       if (rememberMe) {
         localStorage.setItem("userToken", token);
       } else {
@@ -28,6 +29,11 @@ const Login = () => {
       navigate("/profile");
     } catch (err) {
       setError("Login failed. Please check your credentials.");
+      if (err?.response) {
+        setError(err.response.data.error.message);
+      } else {
+        setError(err?.message);
+      }
     }
   };
 
@@ -45,12 +51,12 @@ const Login = () => {
   };
 
   const handleOk = () => {
-   
+
     form
       .validateFields()
-      .then(values => {
-      
-        
+      .then(async values => {
+
+
         let data = JSON.stringify({
           name: values.name,
           email: values.email,
@@ -58,33 +64,29 @@ const Login = () => {
           password: values.password
         });
 
-       
-        let config = {
-          method: 'post',
-          maxBodyLength: Infinity,
-          url: 'http://localhost:8080/kitchensink/member/register/',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          data: data
-        };
-
-        axios.request(config)
+        await ApiClient.post('/member/register/', data)
           .then((response) => {
             console.log('Response:', JSON.stringify(response.data));
 
-            if(response.data.status == true){
+            if (response.data.status == true) {
               message.success('Account created successfully!');
-              form.resetFields(); 
-              setIsModalVisible(false); 
+              form.resetFields();
+              setIsModalVisible(false);
             }
-            else{
-              message.error(response.error.message);
+            else {
+              message.error(response.data.error.message);
             }
-           
+
           })
           .catch((error) => {
-            message.error('Failed to create account. Please try again.');
+            if (error?.response) {
+
+              message.error('Failed to create account. Please try again.');
+              message.error(error.response.data.error.message);
+            } else {
+              message.error('Failed to create account. Please try again.');
+              message.error(error.message);
+            }
           });
       })
       .catch(info => {
@@ -98,7 +100,7 @@ const Login = () => {
 
   return (
     <div className="login-background">
-     
+
       <div className="overlay"></div>
       <div className="wrapper">
         <section className="vh-100 bg-image">
@@ -112,7 +114,7 @@ const Login = () => {
                   <div className="card-body">
                     <div className="auth-form">
                       <h2 className="text-center mb-4">Login your account</h2>
-                      
+
                       <form onSubmit={handleLogin}>
                         <div className="form-floating mb-3">
                           <input
@@ -126,27 +128,27 @@ const Login = () => {
                           <label htmlFor="floatingInput">Email</label>
                         </div>
                         <div className="form-floating mb-2 position-relative">
-    <input
-        type={showPassword ? "text" : "password"}
-        className="form-control"
-        id="Password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-    />
-    <label htmlFor="Password">Password</label>
-    <button 
-        type="button" 
-        className="btn btn-link position-absolute" 
-        style={{ right: '-190px', top: '50%', transform: 'translateY(-50%)' }}
-        onClick={() => setShowPassword(!showPassword)}
-    >
-        <i className={showPassword ? "fas fa-eye-slash" : "fas fa-eye"}></i>
-    </button>
-</div>
+                          <input
+                            type={showPassword ? "text" : "password"}
+                            className="form-control"
+                            id="Password"
+                            placeholder="Password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                          />
+                          <label htmlFor="Password">Password</label>
+                          <button
+                            type="button"
+                            className="btn btn-link position-absolute"
+                            style={{ right: '-190px', top: '50%', transform: 'translateY(-50%)' }}
+                            onClick={() => setShowPassword(!showPassword)}
+                          >
+                            <i className={showPassword ? "fas fa-eye-slash" : "fas fa-eye"}></i>
+                          </button>
+                        </div>
 
 
-                       
+
                         <div className="text-center mt-3">
                           <button
                             type="submit"
@@ -161,7 +163,7 @@ const Login = () => {
                             {error}
                           </div>
                         )}
-                       
+
                       </form>
                     </div>
                   </div>
@@ -173,71 +175,71 @@ const Login = () => {
       </div>
 
       <Modal
-      title="Create New Account"
-      visible={isModalVisible}
-      onCancel={handleCancel}
-      okText="Create"
-      cancelText="Cancel"
-      onOk={handleOk} // Submit form and send data via axios
-    >
-      <Form form={form} layout="vertical">
-        <Form.Item
-          label="Name"
-          name="name"
-          rules={[{ required: true, message: 'Please enter the name' }]}
-        >
-          <Input />
-        </Form.Item>
+        title="Create New Account"
+        visible={isModalVisible}
+        onCancel={handleCancel}
+        okText="Create"
+        cancelText="Cancel"
+        onOk={handleOk} // Submit form and send data via axios
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item
+            label="Name"
+            name="name"
+            rules={[{ required: true, message: 'Please enter the name' }]}
+          >
+            <Input />
+          </Form.Item>
 
-        <Form.Item
-          label="Email Address"
-          name="email"
-          rules={[
-            { required: true, message: 'Please enter the email address' },
-            { type: 'email', message: 'Please enter a valid email' }
-          ]}
-        >
-          <Input />
-        </Form.Item>
+          <Form.Item
+            label="Email Address"
+            name="email"
+            rules={[
+              { required: true, message: 'Please enter the email address' },
+              { type: 'email', message: 'Please enter a valid email' }
+            ]}
+          >
+            <Input />
+          </Form.Item>
 
-        <Form.Item
-          label="Phone Number"
-          name="phoneNumber"
-        >
-          <Input type="text" maxLength={10} />
-        </Form.Item>
+          <Form.Item
+            label="Phone Number"
+            name="phoneNumber"
+          >
+            <Input type="text" maxLength={10} />
+          </Form.Item>
 
-        <Form.Item
-          label="Password"
-          name="password"
-          rules={[
-            { required: true, message: 'Please enter the password' },
-            { min: 6, message: 'Password must be at least 6 characters long' }
-          ]}
-        >
-          <Input type="password" />
-        </Form.Item>
+          <Form.Item
+            label="Password"
+            name="password"
+            rules={[
+              { required: true, message: 'Please enter the password' },
+              { min: 6, message: 'Password must be at least 6 characters long' }
+            ]}
+          >
+            <Input type="password" />
+          </Form.Item>
 
-        <Form.Item
-          label="Confirm Password"
-          name="confirmPassword"
-          dependencies={['password']}
-          rules={[
-            { required: true, message: 'Please confirm the password' },
-            ({ getFieldValue }) => ({
-              validator(_, value) {
-                if (!value || getFieldValue('password') === value) {
-                  return Promise.resolve();
+          <Form.Item
+            label="Confirm Password"
+            name="confirmPassword"
+            dependencies={['password']}
+            rules={[
+              { required: true, message: 'Please confirm the password' },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue('password') === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error('Passwords do not match!'));
                 }
-                return Promise.reject(new Error('Passwords do not match!'));
-              }
-            })
-          ]}
-        >
-          <Input type="password" />
-        </Form.Item>
-      </Form>
-    </Modal>
+              })
+            ]}
+          >
+            <Input type="password" />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };

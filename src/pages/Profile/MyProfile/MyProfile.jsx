@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { message } from 'antd';
-import axios from 'axios';
+import ApiClient from '../../../service/apiclient/AxiosClient';
+import { getEmail } from '../../../service/jwt/JwtService';
 
 const MyProfile = () => {
   const [profile, setProfile] = useState({
@@ -12,14 +13,8 @@ const MyProfile = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-     
-        const response = await axios.get(`${process.env.REACT_APP_API}user`, {
-          headers: { 
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-       
+        const email=getEmail();
+        const response = await ApiClient.get('/user/email/'+email);
         const data = response.data.data;
         setProfile({
           fullName: data.name

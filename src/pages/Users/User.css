@@ -78,3 +78,12 @@
 #message{
     color: red;
 }
+
+.ant-select-item-option-selected {
+    background-color: lightgreen !important;
+  }
+  
+  /* Optional: To customize the hover color of the options */
+  .ant-select-item-option-active {
+    background-color: lightblue !important;
+  }
