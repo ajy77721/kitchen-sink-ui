@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import './User.css';
-import { Modal, Button, Form, Input, Select, message } from 'antd';
+import { Modal, Button, Form, Input, Select, message ,Checkbox} from 'antd';
 import DataTable from '../../components/Table/Table';
 import ApiClient from '../../service/apiclient/AxiosClient';
+import { getEmail } from '../../service/jwt/JwtService';
 
 const { Option } = Select;
 
@@ -11,12 +12,17 @@ const UserDashboard = () => {
   const [isLoading, setIsLoading] = useState(false);  // Add loading state
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
+  const currentEmail = getEmail();
+  const [selectedStatus, setSelectedStatus] = useState(null);
 
   // Fetch data when component mounts
   useEffect(() => {
     fetchUserData();
   }, []);
-  
+
+  const onStatusChange = (e) => {
+    setSelectedStatus(e.target.value);
+  };
   // Function to fetch user data from API
   const fetchUserData = async () => {
     setIsLoading(true);  // Show loading state
@@ -50,18 +56,43 @@ const UserDashboard = () => {
   // Handle form submission
   const handleFormSubmit = async () => {
     try {
-      const values = await form.validateFields();
-      console.log('Form Values:', values);
-      
+      const inputData = await form.validateFields();
+      console.log('Form Values:', inputData);
+      const addUserDTO = {
+        email: inputData.email,
+        name: inputData.name,
+        password: inputData.password,
+        phoneNumber: inputData.phoneNumber,
+        status: inputData.status,
+        roles: parseRoles(inputData.roles),
+      }
       // Here you can add your API call to submit the form data
-      // await ApiClient.post('/user/add', values);
+      try {
+        await ApiClient.post('/user/', addUserDTO).then((response) => {
+          if (response?.data?.status) {
+            form.resetFields();
+            setIsModalVisible(false);
+            message.success('User added successfully!');
 
-      form.resetFields();
-      setIsModalVisible(false);
-      message.success('User added successfully!');
-      
-      // Refresh the user list after adding a new user
-      fetchUserData();
+            // Refresh the user list after adding a new user
+            fetchUserData();
+          } else {
+            message.error('Failed to add user');
+            message.error(response.data.data.error);
+          }
+        }).catch((error) => {
+          if (error.response) {
+            message.error('Failed to add user');
+            message.error(error.response.data.error.message);
+          }else{
+          console.error('Failed to add user:', error);
+          message.error('Failed to add user');}
+        });
+      } catch (error) {
+        console.error('Failed to add user:', error);
+        message.error('Failed to add user');
+        message.error(error.message);
+      }
     } catch (error) {
       console.log('Validation Failed:', error);
       message.error('Form submission failed');
@@ -98,9 +129,13 @@ const UserDashboard = () => {
 
     return validRoles;
   };
-const handleEditAPI  =async (editData) => {
+  const handleEditAPI = async (editData, editOldData) => {
     if (!editData) {
       message.error('No data to save,Plese close the modal and try again');
+      return;
+    }
+    if (editData.email !== editOldData.email && editOldData.email === currentEmail) { //check if email is changed and not same as the logged in user email
+      message.error('Email cannot be changed');
       return;
     }
     const reqData = {
@@ -108,54 +143,54 @@ const handleEditAPI  =async (editData) => {
       email: editData.email,
       name: editData.name,
       password: editData.password,
+      phoneNumber: editData.phoneNumber,
       roles: parseRoles(editData.roles),
-      status: editData.status,
     }
-  
-      await ApiClient.put('/user/', reqData)
-        .then((response) => {
-          if (response.data.status) {
-            message.success('User updated successfully');
-          } else {
-            message.error('Failed to update user');
-            message.error(response.data.data.error);
-          }
-        })
-        .catch((error) => {
-          if (error.response) {
-            message.error('Failed to update user');
-            message.error(error.response.data.error.message);
-          } else {
-            message.error('Failed to update user');
-            message.error(error.message);
-          }
-        });
-        fetchUserData();
+
+    await ApiClient.put('/user/', reqData)
+      .then((response) => {
+        if (response.data.status) {
+          message.success('User updated successfully');
+        } else {
+          message.error('Failed to update user');
+          message.error(response.data.data.error);
+        }
+      })
+      .catch((error) => {
+        if (error.response) {
+          message.error('Failed to update user');
+          message.error(error.response.data.error.message);
+        } else {
+          message.error('Failed to update user');
+          message.error(error.message);
+        }
+      });
+    fetchUserData();
 
   }
 
-  
-  const handleDeleteAPI  =async (id) => {
-    
-      await ApiClient.delete('/user/'+id)
-        .then((response) => {
-          if (response.data.status) {
-            message.success('User delete successfully');
-          } else {
-            message.error('Failed to delete user');
-            message.error(response.data.data.error);
-          }
-        })
-        .catch((error) => {
-          if (error.response) {
-            message.error('Failed to delete user');
-            message.error(error.response.data.error.message);
-          } else {
-            message.error('Failed to delete user');
-            message.error(error.message);
-          }
-        });
-        fetchUserData();
+
+  const handleDeleteAPI = async (id) => {
+
+    await ApiClient.delete('/user/' + id)
+      .then((response) => {
+        if (response.data.status) {
+          message.success('User delete successfully');
+        } else {
+          message.error('Failed to delete user');
+          message.error(response.data.data.error);
+        }
+      })
+      .catch((error) => {
+        if (error.response) {
+          message.error('Failed to delete user');
+          message.error(error.response.data.error.message);
+        } else {
+          message.error('Failed to delete user');
+          message.error(error.message);
+        }
+      });
+    fetchUserData();
 
   }
 
@@ -172,7 +207,7 @@ const handleEditAPI  =async (editData) => {
         {isLoading ? (
           <p>Loading users...</p>
         ) : (
-          <DataTable heading="List of all users" data={data} onEdit={handleEditAPI}  onDelete={handleDeleteAPI} restrictedItem={['status']} />
+          <DataTable heading="List of all users" data={data} onEdit={handleEditAPI} onDelete={handleDeleteAPI} restrictedItem={['status']} refreshData={fetchUserData} />
         )}
 
         <Modal
@@ -203,11 +238,11 @@ const handleEditAPI  =async (editData) => {
               <Input />
             </Form.Item>
             <Form.Item
-            label="Phone Number"
-            name="phoneNumber"
-          >
-            <Input type="text" maxLength={10} />
-          </Form.Item>
+              label="Phone Number"
+              name="phoneNumber"
+            >
+              <Input type="text" maxLength={10} />
+            </Form.Item>
             <Form.Item
               label="Password"
               name="password"
@@ -237,23 +272,50 @@ const handleEditAPI  =async (editData) => {
             >
               <Input type="password" />
             </Form.Item>
-            
-        
-              <Form.Item
-                label="Roles"
-                name="roles"
-                rules={[{ required: true, message: 'Please select at least one role' }]}
+
+
+            <Form.Item
+              label="Roles"
+              name="roles"
+              rules={[{ required: true, message: 'Please select at least one role' }]}
+            >
+              <Select
+                mode="multiple"
+                placeholder="Select roles"
               >
-                <Select
-                  mode="multiple"
-                  placeholder="Select roles"
-                >
-                  <Option value="ADMIN">Admin</Option>
-                  <Option value="USER">User</Option>
-                  <Option value="VISITOR">Visitor</Option>
-                </Select>
-              </Form.Item>
-    
+                <Option value="ADMIN">Admin</Option>
+                <Option value="USER">User</Option>
+                <Option value="VISITOR">Visitor</Option>
+              </Select>
+            </Form.Item>
+            <Form.Item
+            label="Status"
+        name="status"
+          rules={[
+          {
+            required: true,
+            message: 'Please select a status',
+          },
+        ]}
+      >
+        <div>
+          <Checkbox
+            value="ACTIVE"
+            checked={selectedStatus === 'ACTIVE'}
+            onChange={onStatusChange}
+          >
+            ACTIVE
+          </Checkbox>
+          <Checkbox
+            value="BLOCKED"
+            checked={selectedStatus === 'BLOCKED'}
+            onChange={onStatusChange}
+          >
+            BLOCKED
+          </Checkbox>
+        </div>
+      </Form.Item>
+
           </Form>
         </Modal>
       </main>

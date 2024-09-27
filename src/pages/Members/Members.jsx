@@ -49,7 +49,7 @@ const MemberDashboard = () => {
         <Button type="primary" id="primary-btn" onClick={showModal}>
           Add New Member
         </Button>
-        <DataTable heading="List of all Members" data={data}  restrictedItem={['updatedBy', 'approvedTime']} memberBtn={true}  />
+        <DataTable heading="List of all Members" data={data}  restrictedItem={['lastModifiedBy', 'approvedTime']} memberBtn={true}  />
 
         <Modal
           title="Add New User"

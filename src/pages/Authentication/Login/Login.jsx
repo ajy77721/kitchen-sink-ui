@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useState ,useEffect} from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { Modal, Button, Form, Input, Select, message } from 'antd';
 import "./Login.css";
 import ApiClient from "../../../service/apiclient/AxiosClient";
+import { isLoggedIn } from "../../../service/jwt/JwtService";
 const { Option } = Select;
 const Login = () => {
   const [userName, setUserName] = useState("");
@@ -36,6 +36,11 @@ const Login = () => {
       }
     }
   };
+  useEffect(() => {
+    const token = localStorage.getItem("userToken");
+    if (!!token)
+      navigate("/profile");
+  }, []);
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();

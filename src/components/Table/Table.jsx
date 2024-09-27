@@ -5,15 +5,17 @@ import { message, Select } from "antd";
 import ApiClient from '../../service/apiclient/AxiosClient';
 const { Option } = Select;
 
-const DataTable = ({ heading, data, loading, onEdit, onDelete, mongoId, restrictedItem = [], memberBtn }) => {
+const DataTable = ({ heading, data, loading, onEdit, onDelete, mongoId, restrictedItem = [], memberBtn ,refreshData}) => {
   const [headers, setHeaders] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [editData, setEditData] = useState(null);
+  const [editOldData, setOldEditData] = useState(null);
+
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteRowData, setDeleteRowData] = useState(null);
   const [showSaveConfirm, setShowSaveConfirm] = useState(false);
-  const rowsPerPage = 10;
+  const rowsPerPage = 5;
 
   const rolesOptions = ['ADMIN', 'USER', 'VISITOR'];
   const fetchDataTable = () => {
@@ -24,7 +26,7 @@ const DataTable = ({ heading, data, loading, onEdit, onDelete, mongoId, restrict
           header !== idKey &&
           header !== 'id' &&
           header !== 'createdTime' &&
-          header !== 'updatedTime' &&
+          header !== 'lastModifiedTime' &&
           header !== 'createdBy' &&
           !restrictedItem.includes(header)
       );
@@ -45,6 +47,7 @@ const DataTable = ({ heading, data, loading, onEdit, onDelete, mongoId, restrict
 
   const handleEdit = (row) => {
     setEditData(row);
+    setOldEditData(row);
     setShowEditModal(true);
   };
 
@@ -68,16 +71,65 @@ const DataTable = ({ heading, data, loading, onEdit, onDelete, mongoId, restrict
   };
 
   const confirmSaveChanges = () => {
-    onEdit(editData);
+    onEdit(editData, editOldData);
     setShowSaveConfirm(false);
     setShowEditModal(false);
   };
 
-  const handleBlock = () => {
-    console.log('blocked')
-  }
-  const handleActivate = () => {
+  const handleBlock = async(row) => {
+   
+    try{
+      await ApiClient.post('/user/' + row.id + '/status/ACTIVE').
+     then((response) => {
+       console.log('Response:', JSON.stringify(response.data));
+       if (response.data.status == true) {
+         message.success(`User ${row.email} actived successfully!`);
+         refreshData();
+       }
+       else {
+         message.error(response.data.error.message);
+       }
+     }).catch((error) => {   
+       if (error?.response) {
+         message.error(`Failed to actived user  ${row.email}. Please try again.`);
+         message.error(error.response.data.error.message);
+       } else {
+         message.error(`Failed to actived user  ${row.email}. Please try again.`);
+         message.error(error.message);
+       }
+     });
+
+   }catch(error){
+     message.error(`Failed to actived user  ${row.email}. Please try again.`);
+   }
     console.log('active')
+  }
+  const handleActivate = async (row) => {
+  
+    try{
+      await ApiClient.post('/user/' + row.id + '/status/BLOCKED').
+     then((response) => {
+       console.log('Response:', JSON.stringify(response.data));
+       if (response.data.status == true) {
+         message.success(`User ${row.email} blocked successfully!`);
+         refreshData();
+       }
+       else {
+         message.error(response.data.error.message);
+       }
+     }).catch((error) => {   
+       if (error?.response) {
+         message.error(`Failed to blocked user  ${row.email}. Please try again.`);
+         message.error(error.response.data.error.message);
+       } else {
+         message.error(`Failed to blocked user  ${row.email}. Please try again.`);
+         message.error(error.message);
+       }
+     });
+
+   }catch(error){
+     message.error(`Failed to blocked user  ${row.email}. Please try again.`);
+   }
   }
 
   const handleApprove = () => {
@@ -205,8 +257,11 @@ const DataTable = ({ heading, data, loading, onEdit, onDelete, mongoId, restrict
                         ))}
                       </tbody>
                     </Table>
-
-                    <Pagination>
+                  
+                  </>
+                )}
+              </div>
+              <Pagination>
                       {[...Array(totalPages)].map((_, index) => (
                         <Pagination.Item
                           key={index}
@@ -217,9 +272,6 @@ const DataTable = ({ heading, data, loading, onEdit, onDelete, mongoId, restrict
                         </Pagination.Item>
                       ))}
                     </Pagination>
-                  </>
-                )}
-              </div>
             </div>
           </div>
         </div>
@@ -235,27 +287,34 @@ const DataTable = ({ heading, data, loading, onEdit, onDelete, mongoId, restrict
   <Modal.Body>
     <Form>
       {headers
-        .filter(header => header !== 'updatedBy')
+        .filter(header => header !== 'lastModifiedBy')
         .map((header) => (
           <Form.Group key={header} controlId={header}>
             <Form.Label>{header}</Form.Label>
             
             {header === 'roles' ? (
+              
               <Select
-                mode="multiple"
-                defaultValue={editData ? editData[header] : ['visitor']}
-                onChange={(value) => {
-                  // Ensure "visitor" is always selected
-                  if (!value.includes('visitor')) {
-                    value.push('visitor');
-                  }
-                  setEditData({ ...editData, [header]: value });
-                }}
-                options={rolesOptions.map(role => ({ value: role, label: role }))}
-                style={{ width: '100%' }}
-                // Fix the z-index issue
-                getPopupContainer={trigger => trigger.parentNode}
-              />
+              mode="multiple"
+              defaultValue={editData ? editData[header] : ['']}             
+              onChange={(value) => {
+                // Check if "VISITOR" is selected
+                if (value.length === 0) {
+                  message.error('At least "VISITOR" should be selected');
+                  value.push('VISITOR'); // Ensure "VISITOR" remains selected
+                } else if (!value.includes('VISITOR')) {
+                  // If "VISITOR" is not included, add it
+                  message.error('"VISITOR" should be selected');
+                }
+            
+                // Update state
+                setEditData({ ...editData, [header]: value });
+              }}
+              options={rolesOptions.map(role => ({ value: role, label: role }))}
+              style={{ width: '100%' }}
+              getPopupContainer={(trigger) => trigger.parentNode}
+            />
+            
             ) : (
               <Form.Control
                 type="text"
@@ -263,6 +322,7 @@ const DataTable = ({ heading, data, loading, onEdit, onDelete, mongoId, restrict
                 onChange={(e) => setEditData({ ...editData, [header]: e.target.value })} // Allow editing
               />
             )}
+
           </Form.Group>
       ))}
     </Form>
