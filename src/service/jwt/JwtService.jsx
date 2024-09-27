@@ -1,7 +1,12 @@
 import { jwtDecode } from 'jwt-decode';
 
-export const getToken = () => localStorage.getItem('userToken');
-
+export const getToken = () => {
+   const token=localStorage.getItem('userToken');
+   if (token=='undefined' || token==null) {
+    window.location.href = '/';
+  }
+    return token;
+}
 export const isLoggedIn = () => {
   const token = getToken();
   if (token=='undefined' || token==null) {
@@ -31,4 +36,17 @@ export const getEmail = () => {
 export const clearSession = () => {
   localStorage.removeItem('userToken');
   window.location.href = '/';
+}
+
+export const isAdminRole = () => {
+  const role = getUserRole();
+  return role.includes('ADMIN');
+}
+export const isUserRole = () => {
+  const role = getUserRole();
+  return role.includes('USER') && !role.includes('ADMIN') && role.includes('VISITOR');
+}
+export const isVisitorRole = () => {
+  const role = getUserRole();
+  return role.includes('VISITOR') && !role.includes('ADMIN') && !role.includes('USER');
 }

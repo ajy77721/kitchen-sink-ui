@@ -3,19 +3,17 @@ import './User.css';
 import { Modal, Button, Form, Input, Select, message, Checkbox } from 'antd';
 import DataTable from '../../components/Table/Table';
 import ApiClient from '../../service/apiclient/AxiosClient';
-import { clearSession, getEmail } from '../../service/jwt/JwtService';
+import { clearSession, getEmail, isAdminRole, isVisitorRole } from '../../service/jwt/JwtService';
 
 const { Option } = Select;
 
 const UserDashboard = () => {
   const [data, setData] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);  // Add loading state
+//  const [isLoading, setIsLoading] = useState(false);  // Add loading state
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
   const currentEmail = getEmail();
   const [selectedStatus, setSelectedStatus] = useState(null);
-  const [isResetModalVisible, setIsResetModalVisible] = useState(false);
-
 
   useEffect(() => {
     fetchUserData();
@@ -26,12 +24,14 @@ const UserDashboard = () => {
   };
   // Function to fetch user data from API
   const fetchUserData = async () => {
-    setIsLoading(true);  // Show loading state
+   // setIsLoading(true);  // Show loading state
     try {
       const response = await ApiClient.get('/user');
       console.log('API Response:', response);
       if (response.status === 200 && response.data) {
-        setData(response.data.data || []);  // Ensure data is an array
+        const users=response.data.data || []
+        setData(users);
+         // Ensure data is an array
       } else {
         console.error('Unexpected API response:', response);
         message.error('Failed to load user data');
@@ -39,28 +39,32 @@ const UserDashboard = () => {
     } catch (error) {
       if (error.response) {
         switch (error.response.status) {
-            case 401:
-                message.error('Unauthorized: Please logout and clean your user token.');
-               clearSession();
-                break;
-            case 400:
-                message.error('Bad Request: ' + error.response.data.error.message);
-                break;
-            case 404:
-                message.error('Not Found: The user data could not be found.');
-                break;
-            case 500:
-                message.error('Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.');
-                break;
-            default:
-                message.error('Error fetching user data: ' + error.response.data.error.message);
-                break;
+          case 401:
+            message.error('Unauthorized: Please logout and clean your user token.');
+            clearSession();
+            break;
+          case 403:
+          //  setIsLoading(true);
+            message.error(error.response.data.error.message);
+            break;  
+          case 400:
+            message.error('Bad Request: ' + error.response.data.error.message);
+            break;
+          case 404:
+            message.error('Not Found: The user data could not be found.');
+            break;
+          case 500:
+            message.error('Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.');
+            break;
+          default:
+            message.error('Error fetching user data: ' + error.response.data.error.message);
+            break;
         }
-    } else {
+      } else {
         message.error('Error fetching user data. Please try again.');
-    }
+      }
     } finally {
-      setIsLoading(false);  // Hide loading state
+     // setIsLoading(false);  // Hide loading state
     }
   };
   // Show the modal for adding new user
@@ -79,7 +83,7 @@ const UserDashboard = () => {
       .then((response) => {
         if (response.data.status) {
           message.success('Password reset successfully');
-          setIsResetModalVisible(false);
+          fetchUserData();
         } else {
           message.error('Failed to reset password');
           message.error(response.data.data.error);
@@ -90,7 +94,7 @@ const UserDashboard = () => {
           switch (error.response.status) {
             case 401:
               message.error(`Unauthorized: Please logout and clean your user token.`);
-             clearSession();
+              clearSession();
               break;
             case 400:
               message.error(`Bad Request: ${error.response.data.error.message}`);
@@ -113,108 +117,107 @@ const UserDashboard = () => {
           message.error('Failed to reset password. Please try again.');
           message.error(error.message);
         }
-        
+
       });
     fetchUserData();
-    setIsResetModalVisible(false);
     form.resetFields();
   }
-  const handleBlock = async(row) => {
-   
-    try{
+  const handleBlock = async (row) => {
+
+    try {
       await ApiClient.post('/user/' + row.id + '/status/ACTIVE').
-     then((response) => {
-       console.log('Response:', JSON.stringify(response.data));
-       if (response.data.status == true) {
-         message.success(`User ${row.email} active successfully!`);
-         fetchUserData();
-       }
-       else {
-         message.error(response.data.error.message);
-       }
-     }).catch((error) => {   
-       if (error?.response) {
-        switch (error.response.status) {
-          case 401:
-            message.error(`Unauthorized: Please logout and clean your user token.`);
-            clearSession();
-            break;
-          case 400:
-            message.error(`Bad Request: ${error.response.data.error.message}`);
-            break;
-          case 500:
-            message.error(`Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.`);
-            break;
-          case 404:
-            message.error(`Not Found: ${error.response.data.error.message}.`);
-            break;
-          case 412:
-            message.error(`Precondition Failed: ${error.response.data.error.message}`);
-            break;
-          default:
+        then((response) => {
+          console.log('Response:', JSON.stringify(response.data));
+          if (response.data.status == true) {
+            message.success(`User ${row.email} active successfully!`);
+            fetchUserData();
+          }
+          else {
+            message.error(response.data.error.message);
+          }
+        }).catch((error) => {
+          if (error?.response) {
+            switch (error.response.status) {
+              case 401:
+                message.error(`Unauthorized: Please logout and clean your user token.`);
+                clearSession();
+                break;
+              case 400:
+                message.error(`Bad Request: ${error.response.data.error.message}`);
+                break;
+              case 500:
+                message.error(`Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.`);
+                break;
+              case 404:
+                message.error(`Not Found: ${error.response.data.error.message}.`);
+                break;
+              case 412:
+                message.error(`Precondition Failed: ${error.response.data.error.message}`);
+                break;
+              default:
+                message.error(`Failed to activate user ${row.email}. Please try again.`);
+                message.error(error.response.data.error.message);
+                break;
+            }
+          } else {
             message.error(`Failed to activate user ${row.email}. Please try again.`);
-            message.error(error.response.data.error.message);
-            break;
-        }
-      } else {
-        message.error(`Failed to activate user ${row.email}. Please try again.`);
-        message.error(error.message);
-      }
+            message.error(error.message);
+          }
 
-     });
+        });
 
-   }catch(error){
-     message.error(`Failed to active user  ${row.email}. Please try again.`);
-   }
+    } catch (error) {
+      message.error(`Failed to active user  ${row.email}. Please try again.`);
+    }
     console.log('active')
   }
   const handleActivate = async (row) => {
-  
-    try{
-      await ApiClient.post('/user/' + row.id + '/status/BLOCKED').
-     then((response) => {
-       console.log('Response:', JSON.stringify(response.data));
-       if (response.data.status == true) {
-         message.success(`User ${row.email} blocked successfully!`);
-         fetchUserData();
-       }
-       else {
-         message.error(response.data.error.message);
-       }
-     }).catch((error) => {   
-      if (error?.response) {
-        switch (error.response.status) {
-          case 401:
-            message.error(`Unauthorized: Please logout and clean your user token.`);
-            clearSession();
-            break;
-          case 400:
-            message.error(`Bad Request: ${error.response.data.error.message}`);
-            break;
-          case 404:
-            message.error(`Not Found: The user could not be found.`);
-            break;
-          case 500:
-            message.error(`Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.`);
-            break;
-          case 412: // Precondition Failed
-            message.error(`Precondition Failed: ${error.response.data.error.message}`);
-            break;
-          default:
-            message.error(`Failed to block user ${row.email}. Please try again.`);
-            message.error(error.response.data.error.message);
-            break;
-        }
-      } else {
-        message.error(`Failed to block user ${row.email}. Please try again.`);
-        message.error(error.message);
-      }
-      
-     });
 
-   }catch(error){
-     message.error(`Failed to blocked user  ${row.email}. Please try again.`);
-   }
+    try {
+      await ApiClient.post('/user/' + row.id + '/status/BLOCKED').
+        then((response) => {
+          console.log('Response:', JSON.stringify(response.data));
+          if (response.data.status == true) {
+            message.success(`User ${row.email} blocked successfully!`);
+            fetchUserData();
+          }
+          else {
+            message.error(response.data.error.message);
+          }
+        }).catch((error) => {
+          if (error?.response) {
+            switch (error.response.status) {
+              case 401:
+                message.error(`Unauthorized: Please logout and clean your user token.`);
+                clearSession();
+                break;
+              case 400:
+                message.error(`Bad Request: ${error.response.data.error.message}`);
+                break;
+              case 404:
+                message.error(`Not Found: The user could not be found.`);
+                break;
+              case 500:
+                message.error(`Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.`);
+                break;
+              case 412: // Precondition Failed
+                message.error(`Precondition Failed: ${error.response.data.error.message}`);
+                break;
+              default:
+                message.error(`Failed to block user ${row.email}. Please try again.`);
+                message.error(error.response.data.error.message);
+                break;
+            }
+          } else {
+            message.error(`Failed to block user ${row.email}. Please try again.`);
+            message.error(error.message);
+          }
+
+        });
+
+    } catch (error) {
+      message.error(`Failed to blocked user  ${row.email}. Please try again.`);
+    }
   }
 
   // Handle form submission
@@ -250,7 +253,7 @@ const UserDashboard = () => {
             switch (error.response.status) {
               case 401:
                 message.error(`Unauthorized: Please logout and clean your user token.`);
-               clearSession();
+                clearSession();
                 break;
               case 400:
                 message.error(`Bad Request: ${error.response.data.error.message}`);
@@ -273,7 +276,7 @@ const UserDashboard = () => {
             console.error('Failed to add user:', error);
             message.error('Failed to add user. Please try again.');
           }
-          
+
         });
       } catch (error) {
         console.error('Failed to add user:', error);
@@ -348,7 +351,7 @@ const UserDashboard = () => {
           switch (error.response.status) {
             case 401:
               message.error(`Unauthorized: Please logout and clean your user token.`);
-             clearSession();
+              clearSession();
               break;
             case 400:
               message.error(`Bad Request: ${error.response.data.error.message}`);
@@ -413,7 +416,7 @@ const UserDashboard = () => {
           console.error('Failed to delete user:', error);
           message.error('Failed to delete user. Please try again.');
         }
-        
+
       });
     fetchUserData();
 
@@ -424,18 +427,23 @@ const UserDashboard = () => {
       <main className="main-content">
         <h2>Dashboard</h2>
 
-        <Button type="primary" id="primary-btn" onClick={showModal}>
+        {/* Add New User Button */}
+        {isAdminRole() ? <Button type="primary" id="primary-btn" onClick={showModal}>
           Add New User
-        </Button>
+        </Button> : <div />}
 
         {/* Display loading message when fetching data */}
-        {isLoading ? (
-          <p>Loading users...</p>
+        {isVisitorRole() ? (
+          <div>
+          <p  className="position-relative custom-page">
+            You do not have permission to access this functionality. Please contact the Administrator.
+          </p>
+        </div>
         ) : (
-          <DataTable heading="List of all users" data={data} onEdit={handleEditAPI} 
-                    onDelete={handleDeleteAPI} restrictedItem={['status']}
-                    onBlock={handleBlock} onActive={handleActivate}
-                    onResetPasswordUser={handleResetPassword}  />
+          <DataTable heading="List of all users" data={data} onEdit={handleEditAPI}
+            onDelete={handleDeleteAPI} restrictedItem={['status']}
+            onBlock={handleBlock} onActive={handleActivate}
+            onResetPasswordUser={handleResetPassword} />
         )}
         { /* add User   */}
         <Modal
@@ -546,7 +554,6 @@ const UserDashboard = () => {
 
           </Form>
         </Modal>
-
       </main>
     </>
   );

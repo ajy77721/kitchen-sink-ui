@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Table, Pagination, Spinner, Button, Modal, Form } from 'react-bootstrap';
 import './Table.css';
 import { message, Select, Input } from "antd";
+import { Await } from 'react-router-dom';
+import { getEmail } from '../../service/jwt/JwtService';
 const { Option } = Select;
 
 const DataTable = ({
@@ -26,7 +28,7 @@ const DataTable = ({
   const [password, setPassword] = useState(''); 
   const [confirmPassword, setConfirmPassword] = useState(''); 
 
-
+  const currentEmail = getEmail();
   const rowsPerPage = 5;
 
   const rolesOptions = ['ADMIN', 'USER', 'VISITOR'];
@@ -59,6 +61,10 @@ const DataTable = ({
   const currentData = data.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
   const handleEdit = (row) => {
+    if(row?.email === currentEmail) {
+      message.error('You cannot edit your own account');
+      return;
+    }
     setEditData(row);
     setOldEditData(row);
     setShowEditModal(true);
@@ -69,6 +75,10 @@ const DataTable = ({
   };
 
   const handleDelete = (row) => {
+    if(row?.email === currentEmail) {
+      message.error('You cannot edit your own account');
+      return;
+    }
     setDeleteRowData(row);
     setShowDeleteConfirm(true);
   };
@@ -91,12 +101,14 @@ const DataTable = ({
 
   const confirmResetPassword = async () => {
     if (memberBtn) {
-      onResetPasswordMemeber({ id: resetPasswordDataID, password });
+      await onResetPasswordMemeber({ id: resetPasswordDataID, password });
     } else {
-      onResetPasswordUser({ id: resetPasswordDataID, password });
+       await onResetPasswordUser({ id: resetPasswordDataID, password });
     }
-    setShowSaveConfirm(false);
-    setShowEditModal(false);
+    setShowResetPWDConfirm(false);
+    setShowResetPWDModel(false);
+    setPassword('');
+    setConfirmPassword('');
   }
 
   const handleResetCancel = () => {
@@ -115,23 +127,43 @@ const DataTable = ({
   }
 
   const handleBlock =  (row) => {
+    if(row?.email === currentEmail) {
+      message.error('You cannot edit your own account');
+      return;
+    }
     onBlock(row)
     console.log('block')
   }
   const handleActivate =  (row) => {
+    if(row?.email === currentEmail) {
+      message.error('You cannot edit your own account');
+      return;
+    }
     onActive(row)
     console.log('active')
   }
 
   const handleApprove = (row) => {
+    if(row?.email === currentEmail) {
+      message.error('You cannot edit your own account');
+      return;
+    }
     console.log('approve')
     onStatusAction(row, 'APPROVE')
   }
   const handleDecline = (row) => {
+    if(row?.email === currentEmail) {
+      message.error('You cannot edit your own account');
+      return;
+    }
     console.log('decline')
     onStatusAction(row, 'DECLINE')
   }
   const handleReset = (row) => {
+    if(row?.email === currentEmail) {
+      message.error('You cannot edit your own account');
+      return;
+    }
     setResetPasswordDataID(row.id)
     setShowResetPWDModel(true)
     console.log('reset')
@@ -154,7 +186,7 @@ const DataTable = ({
                 {loading ? (
                   <Spinner animation="border" />
                 ) : data.length === 0 ? (
-                  <Spinner animation="border" />
+                  <p>No data available</p>             
                 ) : (
                   <>
                     <Table striped bordered hover>

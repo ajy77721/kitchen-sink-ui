@@ -20,9 +20,9 @@ function App() {
 
         {/* login */}
         <Route path="/*" element={<Login />} />
-        <Route path="/dashboard" element={<><Sidebar /><User /></>} />
+        <Route path="/userDashboard" element={<><Sidebar /><User /></>} />
         <Route path="/profile" element={<><Sidebar /><MyProfile /></>} />
-        <Route path="/members" element={<><Sidebar /><Members /></>} />
+        <Route path="/memberDashboard" element={<><Sidebar /><Members /></>} />
       
       
 
