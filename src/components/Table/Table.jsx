@@ -83,7 +83,7 @@ const DataTable = ({ heading, data, loading, onEdit, onDelete, mongoId, restrict
      then((response) => {
        console.log('Response:', JSON.stringify(response.data));
        if (response.data.status == true) {
-         message.success(`User ${row.email} actived successfully!`);
+         message.success(`User ${row.email} active successfully!`);
          refreshData();
        }
        else {
@@ -91,16 +91,16 @@ const DataTable = ({ heading, data, loading, onEdit, onDelete, mongoId, restrict
        }
      }).catch((error) => {   
        if (error?.response) {
-         message.error(`Failed to actived user  ${row.email}. Please try again.`);
+         message.error(`Failed to active user  ${row.email}. Please try again.`);
          message.error(error.response.data.error.message);
        } else {
-         message.error(`Failed to actived user  ${row.email}. Please try again.`);
+         message.error(`Failed to active user  ${row.email}. Please try again.`);
          message.error(error.message);
        }
      });
 
    }catch(error){
-     message.error(`Failed to actived user  ${row.email}. Please try again.`);
+     message.error(`Failed to active user  ${row.email}. Please try again.`);
    }
     console.log('active')
   }
