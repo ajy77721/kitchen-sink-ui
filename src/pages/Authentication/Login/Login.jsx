@@ -1,14 +1,13 @@
-import React, { useState ,useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Modal, Button, Form, Input, Select, message } from 'antd';
 import "./Login.css";
 import ApiClient from "../../../service/apiclient/AxiosClient";
-import { isLoggedIn } from "../../../service/jwt/JwtService";
+import { clearSession, isLoggedIn } from "../../../service/jwt/JwtService";
 const { Option } = Select;
 const Login = () => {
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
@@ -21,14 +20,37 @@ const Login = () => {
         password: password
       });
       const token = response.data.data.token;
-      if (rememberMe) {
-        localStorage.setItem("userToken", token);
-      } else {
-        localStorage.setItem("userToken", token);
-      }
+      localStorage.setItem("userToken", token);
       navigate("/profile");
     } catch (err) {
       setError("Login failed. Please check your credentials.");
+      if (error?.response) {
+        switch (error.response.status) {
+          case 401:
+            setError(`Unauthorized: Please logout and clean your user token.`);
+            clearSession();
+            break;
+          case 400:
+            setError(`Bad Request: ${error.response.data.error.message}`);
+            break;
+          case 500:
+            setError(`Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.`);
+            break;
+          case 404:
+            setError(`Not Found: ${error.response.data.error.message}.`);
+            break;
+          case 412:
+            setError(`Precondition Failed: ${error.response.data.error.message}`);
+            break;
+          default:
+            setError(`Failed to login user. Please try again.`);
+            setError(error.response.data.error.message);
+            break;
+        }
+      } else {
+        setError(`Failed to login user. Please try again.`);
+        setError(error.message);
+      }
       if (err?.response) {
         setError(err.response.data.error.message);
       } else {
@@ -85,13 +107,32 @@ const Login = () => {
           })
           .catch((error) => {
             if (error?.response) {
-
-              message.error('Failed to create account. Please try again.');
-              message.error(error.response.data.error.message);
+              switch (error.response.status) {
+                case 401:
+                  message.error(`Unauthorized: Please logout and clean your user token.`);
+                 clearSession();
+                  break;
+                case 400:
+                  message.error(`Bad Request: ${error.response.data.error.message}`);
+                  break;
+                case 500:
+                  message.error(`Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.`);
+                  break;
+                case 404:
+                  message.error(`Not Found: The requested resource could not be found.`);
+                  break;
+                case 412:
+                  message.error(`Precondition Failed: ${error.response.data.error.message}`);
+                  break;
+                default:
+                  message.error('Failed to create account. Please try again.');
+                  message.error(error.response.data.error.message);
+                  break;
+              }
             } else {
               message.error('Failed to create account. Please try again.');
               message.error(error.message);
-            }
+            }   
           });
       })
       .catch(info => {

@@ -28,3 +28,7 @@ export const getEmail = () => {
   const decodedToken = jwtDecode(token);
   return decodedToken.sub;  // Assuming the token contains a 'role' field
 };
+export const clearSession = () => {
+  localStorage.removeItem('userToken');
+  window.location.href = '/';
+}

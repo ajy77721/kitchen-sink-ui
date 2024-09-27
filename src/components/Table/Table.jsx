@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Table, Pagination, Spinner, Button, Modal, Form } from 'react-bootstrap';
 import './Table.css';
 import { message, Select, Input } from "antd";
-import ApiClient from '../../service/apiclient/AxiosClient';
 const { Option } = Select;
 
 const DataTable = ({

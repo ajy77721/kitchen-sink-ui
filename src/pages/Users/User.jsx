@@ -3,7 +3,7 @@ import './User.css';
 import { Modal, Button, Form, Input, Select, message, Checkbox } from 'antd';
 import DataTable from '../../components/Table/Table';
 import ApiClient from '../../service/apiclient/AxiosClient';
-import { getEmail } from '../../service/jwt/JwtService';
+import { clearSession, getEmail } from '../../service/jwt/JwtService';
 
 const { Option } = Select;
 
@@ -37,8 +37,28 @@ const UserDashboard = () => {
         message.error('Failed to load user data');
       }
     } catch (error) {
-      console.error('Error fetching user data:', error);
-      message.error('Error fetching user data');
+      if (error.response) {
+        switch (error.response.status) {
+            case 401:
+                message.error('Unauthorized: Please logout and clean your user token.');
+               clearSession();
+                break;
+            case 400:
+                message.error('Bad Request: ' + error.response.data.error.message);
+                break;
+            case 404:
+                message.error('Not Found: The user data could not be found.');
+                break;
+            case 500:
+                message.error('Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.');
+                break;
+            default:
+                message.error('Error fetching user data: ' + error.response.data.error.message);
+                break;
+        }
+    } else {
+        message.error('Error fetching user data. Please try again.');
+    }
     } finally {
       setIsLoading(false);  // Hide loading state
     }
@@ -67,12 +87,33 @@ const UserDashboard = () => {
       })
       .catch((error) => {
         if (error.response) {
-          message.error('Failed to reset password');
-          message.error(error.response.data.error.message);
+          switch (error.response.status) {
+            case 401:
+              message.error(`Unauthorized: Please logout and clean your user token.`);
+             clearSession();
+              break;
+            case 400:
+              message.error(`Bad Request: ${error.response.data.error.message}`);
+              break;
+            case 404:
+              message.error(`Not Found: The requested resource could not be found.`);
+              break;
+            case 500:
+              message.error(`Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.`);
+              break;
+            case 412: // Precondition Failed
+              message.error(`Precondition Failed: ${error.response.data.error.message}`);
+              break;
+            default:
+              message.error('Failed to reset password. Please try again.');
+              message.error(error.response.data.error.message);
+              break;
+          }
         } else {
-          message.error('Failed to reset password');
+          message.error('Failed to reset password. Please try again.');
           message.error(error.message);
         }
+        
       });
     fetchUserData();
     setIsResetModalVisible(false);
@@ -93,12 +134,33 @@ const UserDashboard = () => {
        }
      }).catch((error) => {   
        if (error?.response) {
-         message.error(`Failed to active user  ${row.email}. Please try again.`);
-         message.error(error.response.data.error.message);
-       } else {
-         message.error(`Failed to active user  ${row.email}. Please try again.`);
-         message.error(error.message);
-       }
+        switch (error.response.status) {
+          case 401:
+            message.error(`Unauthorized: Please logout and clean your user token.`);
+            clearSession();
+            break;
+          case 400:
+            message.error(`Bad Request: ${error.response.data.error.message}`);
+            break;
+          case 500:
+            message.error(`Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.`);
+            break;
+          case 404:
+            message.error(`Not Found: ${error.response.data.error.message}.`);
+            break;
+          case 412:
+            message.error(`Precondition Failed: ${error.response.data.error.message}`);
+            break;
+          default:
+            message.error(`Failed to activate user ${row.email}. Please try again.`);
+            message.error(error.response.data.error.message);
+            break;
+        }
+      } else {
+        message.error(`Failed to activate user ${row.email}. Please try again.`);
+        message.error(error.message);
+      }
+
      });
 
    }catch(error){
@@ -120,13 +182,34 @@ const UserDashboard = () => {
          message.error(response.data.error.message);
        }
      }).catch((error) => {   
-       if (error?.response) {
-         message.error(`Failed to blocked user  ${row.email}. Please try again.`);
-         message.error(error.response.data.error.message);
-       } else {
-         message.error(`Failed to blocked user  ${row.email}. Please try again.`);
-         message.error(error.message);
-       }
+      if (error?.response) {
+        switch (error.response.status) {
+          case 401:
+            message.error(`Unauthorized: Please logout and clean your user token.`);
+            clearSession();
+            break;
+          case 400:
+            message.error(`Bad Request: ${error.response.data.error.message}`);
+            break;
+          case 404:
+            message.error(`Not Found: The user could not be found.`);
+            break;
+          case 500:
+            message.error(`Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.`);
+            break;
+          case 412: // Precondition Failed
+            message.error(`Precondition Failed: ${error.response.data.error.message}`);
+            break;
+          default:
+            message.error(`Failed to block user ${row.email}. Please try again.`);
+            message.error(error.response.data.error.message);
+            break;
+        }
+      } else {
+        message.error(`Failed to block user ${row.email}. Please try again.`);
+        message.error(error.message);
+      }
+      
      });
 
    }catch(error){
@@ -164,12 +247,33 @@ const UserDashboard = () => {
           }
         }).catch((error) => {
           if (error.response) {
-            message.error('Failed to add user');
-            message.error(error.response.data.error.message);
+            switch (error.response.status) {
+              case 401:
+                message.error(`Unauthorized: Please logout and clean your user token.`);
+               clearSession();
+                break;
+              case 400:
+                message.error(`Bad Request: ${error.response.data.error.message}`);
+                break;
+              case 404:
+                message.error(`Not Found: The specified resource could not be found.`);
+                break;
+              case 500:
+                message.error(`Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.`);
+                break;
+              case 412: // Precondition Failed
+                message.error(`Precondition Failed: ${error.response.data.error.message}`);
+                break;
+              default:
+                message.error('Failed to add user. Please try again.');
+                message.error(error.response.data.error.message);
+                break;
+            }
           } else {
             console.error('Failed to add user:', error);
-            message.error('Failed to add user');
+            message.error('Failed to add user. Please try again.');
           }
+          
         });
       } catch (error) {
         console.error('Failed to add user:', error);
@@ -241,11 +345,31 @@ const UserDashboard = () => {
       })
       .catch((error) => {
         if (error.response) {
-          message.error('Failed to update user');
-          message.error(error.response.data.error.message);
+          switch (error.response.status) {
+            case 401:
+              message.error(`Unauthorized: Please logout and clean your user token.`);
+             clearSession();
+              break;
+            case 400:
+              message.error(`Bad Request: ${error.response.data.error.message}`);
+              break;
+            case 404:
+              message.error(`Not Found: The specified user could not be found.`);
+              break;
+            case 500:
+              message.error(`Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.`);
+              break;
+            case 412: // Precondition Failed
+              message.error(`Precondition Failed: ${error.response.data.error.message}`);
+              break;
+            default:
+              message.error('Failed to update user. Please try again.');
+              message.error(error.response.data.error.message);
+              break;
+          }
         } else {
-          message.error('Failed to update user');
-          message.error(error.message);
+          console.error('Failed to update user:', error);
+          message.error('Failed to update user. Please try again.');
         }
       });
     fetchUserData();
@@ -266,12 +390,30 @@ const UserDashboard = () => {
       })
       .catch((error) => {
         if (error.response) {
-          message.error('Failed to delete user');
-          message.error(error.response.data.error.message);
+          switch (error.response.status) {
+            case 401:
+              message.error(`Unauthorized: Please logout and clean your user token.`);
+              clearSession();
+              break;
+            case 400:
+              message.error(`Bad Request: ${error.response.data.error.message}`);
+              break;
+            case 404:
+              message.error(`Not Found: The specified user could not be found.`);
+              break;
+            case 500:
+              message.error(`Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.`);
+              break;
+            default:
+              message.error('Failed to delete user. Please try again.');
+              message.error(error.response.data.error.message);
+              break;
+          }
         } else {
-          message.error('Failed to delete user');
-          message.error(error.message);
+          console.error('Failed to delete user:', error);
+          message.error('Failed to delete user. Please try again.');
         }
+        
       });
     fetchUserData();
 
