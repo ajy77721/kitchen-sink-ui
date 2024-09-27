@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './User.css';
-import { Modal, Button, Form, Input, Select, message ,Checkbox} from 'antd';
+import { Modal, Button, Form, Input, Select, message, Checkbox } from 'antd';
 import DataTable from '../../components/Table/Table';
 import ApiClient from '../../service/apiclient/AxiosClient';
 import { getEmail } from '../../service/jwt/JwtService';
@@ -14,6 +14,9 @@ const UserDashboard = () => {
   const [form] = Form.useForm();
   const currentEmail = getEmail();
   const [selectedStatus, setSelectedStatus] = useState(null);
+  const [isResetModalVisible, setIsResetModalVisible] = useState(false);
+  const [resetDto, setResetDto] = useState(null);
+  const [resetRow, setResetRow] = useState(null);
 
 
   useEffect(() => {
@@ -52,7 +55,53 @@ const UserDashboard = () => {
     setIsModalVisible(false);
     form.resetFields();
   };
-
+  const handleResetCancel = () => {
+    setIsResetModalVisible(false);
+    form.resetFields();
+  }
+  const handleResetFormSubmit = async () => {
+    try{
+    const inputData = await form.validateFields();
+    setResetDto({
+        id: resetRow.id,
+        password: inputData.password
+      });
+      confirmReset();
+    }catch(error){
+      console.log('Validation Failed:', error);
+    }
+  }
+  const confirmReset = () => {
+    handleResetPassword()
+  }
+  const handleResetPassword = async () => {
+    await ApiClient.post('/user/reset-password', resetDto)
+      .then((response) => {
+        if (response.data.status) {
+          message.success('Password reset successfully');
+          setIsResetModalVisible(false);
+        } else {
+          message.error('Failed to reset password');
+          message.error(response.data.data.error);
+        }
+      })
+      .catch((error) => {
+        if (error.response) {
+          message.error('Failed to reset password');
+          message.error(error.response.data.error.message);
+        } else {
+          message.error('Failed to reset password');
+          message.error(error.message);
+        }
+      });
+    fetchUserData();
+    setIsResetModalVisible(false);
+    form.resetFields();
+  }
+  const onResetPassword = (row) => {
+    setIsResetModalVisible(true);
+    setResetRow(row);
+  }
   // Handle form submission
   const handleFormSubmit = async () => {
     try {
@@ -71,6 +120,7 @@ const UserDashboard = () => {
         await ApiClient.post('/user/', addUserDTO).then((response) => {
           if (response?.data?.status) {
             form.resetFields();
+            setSelectedStatus(null);
             setIsModalVisible(false);
             message.success('User added successfully!');
 
@@ -84,9 +134,10 @@ const UserDashboard = () => {
           if (error.response) {
             message.error('Failed to add user');
             message.error(error.response.data.error.message);
-          }else{
-          console.error('Failed to add user:', error);
-          message.error('Failed to add user');}
+          } else {
+            console.error('Failed to add user:', error);
+            message.error('Failed to add user');
+          }
         });
       } catch (error) {
         console.error('Failed to add user:', error);
@@ -207,9 +258,9 @@ const UserDashboard = () => {
         {isLoading ? (
           <p>Loading users...</p>
         ) : (
-          <DataTable heading="List of all users" data={data} onEdit={handleEditAPI} onDelete={handleDeleteAPI} restrictedItem={['status']} refreshData={fetchUserData} />
+          <DataTable heading="List of all users" data={data} onEdit={handleEditAPI} onDelete={handleDeleteAPI} restrictedItem={['status']} refreshData={fetchUserData} onResetPassword={onResetPassword} />
         )}
-
+        { /* add User   */}
         <Modal
           title="Add New User"
           visible={isModalVisible}
@@ -289,35 +340,78 @@ const UserDashboard = () => {
               </Select>
             </Form.Item>
             <Form.Item
-            label="Status"
-        name="status"
-          rules={[
-          {
-            required: true,
-            message: 'Please select a status',
-          },
-        ]}
-      >
-        <div>
-          <Checkbox
-            value="ACTIVE"
-            checked={selectedStatus === 'ACTIVE'}
-            onChange={onStatusChange}
-          >
-            ACTIVE
-          </Checkbox>
-          <Checkbox
-            value="BLOCKED"
-            checked={selectedStatus === 'BLOCKED'}
-            onChange={onStatusChange}
-          >
-            BLOCKED
-          </Checkbox>
-        </div>
-      </Form.Item>
+              label="Status"
+              name="status"
+              rules={[
+                {
+                  required: true,
+                  message: 'Please select a status',
+                },
+              ]}
+            >
+              <div>
+                <Checkbox
+                  value="ACTIVE"
+                  checked={selectedStatus === 'ACTIVE'}
+                  onChange={onStatusChange}
+                >
+                  ACTIVE
+                </Checkbox>
+                <Checkbox
+                  value="BLOCKED"
+                  checked={selectedStatus === 'BLOCKED'}
+                  onChange={onStatusChange}
+                >
+                  BLOCKED
+                </Checkbox>
+              </div>
+            </Form.Item>
 
           </Form>
         </Modal>
+
+        {/* Reset Password Modal */}
+        <Modal
+          title="Reset Password"
+          visible={isResetModalVisible}
+          onCancel={handleResetCancel}
+          okText="Submit"
+          cancelText="Cancel"
+          onOk={handleResetFormSubmit}  // Form submission handler
+        >
+          <Form form={form} layout="vertical">
+            <Form.Item
+              label="Password"
+              name="password"
+              rules={[
+                { required: true, message: 'Please enter the password' },
+                { min: 6, message: 'Password must be at least 6 characters long' }
+              ]}
+            >
+              <Input type="password" />
+            </Form.Item>
+
+            <Form.Item
+              label="Confirm Password"
+              name="confirmPassword"
+              dependencies={['password']}
+              rules={[
+                { required: true, message: 'Please confirm the password' },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (!value || getFieldValue('password') === value) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject(new Error('Passwords do not match!'));
+                  }
+                })
+              ]}
+            >
+              <Input type="password" />
+            </Form.Item>
+          </Form>
+        </Modal>
+
       </main>
     </>
   );

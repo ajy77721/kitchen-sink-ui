@@ -5,7 +5,12 @@ import { message, Select } from "antd";
 import ApiClient from '../../service/apiclient/AxiosClient';
 const { Option } = Select;
 
-const DataTable = ({ heading, data, loading, onEdit, onDelete, mongoId, restrictedItem = [], memberBtn ,refreshData}) => {
+const DataTable = ( { 
+        heading, data, loading, onEdit, onDelete, mongoId, 
+        restrictedItem = [], memberBtn ,refreshData,
+        onResetPassword
+          
+      }) => {
   const [headers, setHeaders] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [editData, setEditData] = useState(null);
@@ -138,7 +143,8 @@ const DataTable = ({ heading, data, loading, onEdit, onDelete, mongoId, restrict
   const handleDecline = () => {
     console.log('active')
   }
-  const handleReset = () => {
+  const handleReset = (row) => {
+    onResetPassword(row)
     console.log('reset')
   }
 
