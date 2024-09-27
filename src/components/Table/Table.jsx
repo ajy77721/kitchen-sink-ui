@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Pagination, Spinner, Button, Modal, Form } from 'react-bootstrap';
 import './Table.css';
-import { message, Select } from "antd";
+import { message, Select, Input } from "antd";
 import ApiClient from '../../service/apiclient/AxiosClient';
 const { Option } = Select;
 
-const DataTable = ( { 
-        heading, data, loading, onEdit, onDelete, mongoId, 
-        restrictedItem = [], memberBtn ,refreshData,
-        onResetPassword
-          
-      }) => {
+const DataTable = ({
+  heading, data, loading, onEdit, onDelete, mongoId,
+  restrictedItem = [], memberBtn,
+  onBlock, onActive, onResetPasswordUser, onResetPasswordMemeber,
+  onStatusAction
+}) => {
   const [headers, setHeaders] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [editData, setEditData] = useState(null);
@@ -20,6 +20,14 @@ const DataTable = ( {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteRowData, setDeleteRowData] = useState(null);
   const [showSaveConfirm, setShowSaveConfirm] = useState(false);
+
+  const [showResetPWDModel, setShowResetPWDModel] = useState(false);
+  const [showResetPWDConfirm, setShowResetPWDConfirm] = useState(false);
+  const [resetPasswordDataID, setResetPasswordDataID] = useState('');
+  const [password, setPassword] = useState(''); 
+  const [confirmPassword, setConfirmPassword] = useState(''); 
+
+
   const rowsPerPage = 5;
 
   const rolesOptions = ['ADMIN', 'USER', 'VISITOR'];
@@ -38,9 +46,10 @@ const DataTable = ( {
       setHeaders(fetchedHeaders);
     }
   }
+
   useEffect(() => {
     fetchDataTable();
-  }, []);
+  }, [data]);
 
   const totalPages = Math.ceil(data.length / rowsPerPage);
 
@@ -81,76 +90,58 @@ const DataTable = ( {
     setShowEditModal(false);
   };
 
-  const handleBlock = async(row) => {
-   
-    try{
-      await ApiClient.post('/user/' + row.id + '/status/ACTIVE').
-     then((response) => {
-       console.log('Response:', JSON.stringify(response.data));
-       if (response.data.status == true) {
-         message.success(`User ${row.email} active successfully!`);
-         refreshData();
-       }
-       else {
-         message.error(response.data.error.message);
-       }
-     }).catch((error) => {   
-       if (error?.response) {
-         message.error(`Failed to active user  ${row.email}. Please try again.`);
-         message.error(error.response.data.error.message);
-       } else {
-         message.error(`Failed to active user  ${row.email}. Please try again.`);
-         message.error(error.message);
-       }
-     });
-
-   }catch(error){
-     message.error(`Failed to active user  ${row.email}. Please try again.`);
-   }
-    console.log('active')
-  }
-  const handleActivate = async (row) => {
-  
-    try{
-      await ApiClient.post('/user/' + row.id + '/status/BLOCKED').
-     then((response) => {
-       console.log('Response:', JSON.stringify(response.data));
-       if (response.data.status == true) {
-         message.success(`User ${row.email} blocked successfully!`);
-         refreshData();
-       }
-       else {
-         message.error(response.data.error.message);
-       }
-     }).catch((error) => {   
-       if (error?.response) {
-         message.error(`Failed to blocked user  ${row.email}. Please try again.`);
-         message.error(error.response.data.error.message);
-       } else {
-         message.error(`Failed to blocked user  ${row.email}. Please try again.`);
-         message.error(error.message);
-       }
-     });
-
-   }catch(error){
-     message.error(`Failed to blocked user  ${row.email}. Please try again.`);
-   }
+  const confirmResetPassword = async () => {
+    if (memberBtn) {
+      onResetPasswordMemeber({ id: resetPasswordDataID, password });
+    } else {
+      onResetPasswordUser({ id: resetPasswordDataID, password });
+    }
+    setShowSaveConfirm(false);
+    setShowEditModal(false);
   }
 
-  const handleApprove = () => {
+  const handleResetCancel = () => {
+    setShowResetPWDModel(false);
+    setPassword('');
+    setConfirmPassword('');
+  }
+  const handleResetFormSubmit = () => {
+    try {
+      if (password === confirmPassword) {
+        setShowResetPWDConfirm(true)
+      }
+    } catch (error) {
+      console.log('Validation Failed:', error);
+    }
+  }
+
+  const handleBlock =  (row) => {
+    onBlock(row)
+    console.log('block')
+  }
+  const handleActivate =  (row) => {
+    onActive(row)
     console.log('active')
   }
-  const handleDecline = () => {
-    console.log('active')
+
+  const handleApprove = (row) => {
+    console.log('approve')
+    onStatusAction(row, 'APPROVE')
+  }
+  const handleDecline = (row) => {
+    console.log('decline')
+    onStatusAction(row, 'DECLINE')
   }
   const handleReset = (row) => {
-    onResetPassword(row)
+    setResetPasswordDataID(row.id)
+    setShowResetPWDModel(true)
     console.log('reset')
   }
 
 
   return (
     <div className="main-content">
+      {/* table Model */}
       <div className="position-relative custom-page">
         <div className="col-sm-12">
           <div className="card">
@@ -174,7 +165,8 @@ const DataTable = ( {
                             <th key={header}>{header}</th>
                           ))}
                           <th>Modify Options</th>
-                          <th>Reset PWD & Status</th>
+                          {!memberBtn && <th>Reset PWD & Status</th>}
+                          {memberBtn && <th>Reset PWD</th>}
                           {memberBtn &&
                             <th>Approval</th>
                           }
@@ -242,8 +234,11 @@ const DataTable = ( {
                               <td className='rowBtnn'>
                                 {row.status === 'PENDING' &&
                                   <>
-                                    <button id="primary-btn" onClick={handleApprove}>Approve</button>
-                                    <button variant="danger" style={{ marginTop: '2px' }} id="primary-btn" className='redBtn' onClick={handleDecline}>Decline</button>
+                                    <Button id="primary-btn" 
+                                    
+                                    onClick={() => handleApprove(row)}>Approve</Button>
+                                    <Button variant="danger" style={{ marginTop: '2px' }} id="primary-btn" className='redBtn' onClick={() => handleDecline(row)}>Decline</Button>
+                             
                                   </>
                                 }
                                 {row.status === 'APPROVED' &&
@@ -263,100 +258,82 @@ const DataTable = ( {
                         ))}
                       </tbody>
                     </Table>
-                  
+
                   </>
                 )}
               </div>
               <Pagination>
-                      {[...Array(totalPages)].map((_, index) => (
-                        <Pagination.Item
-                          key={index}
-                          active={index + 1 === currentPage}
-                          onClick={() => handlePageChange(index + 1)}
-                        >
-                          {index + 1}
-                        </Pagination.Item>
-                      ))}
-                    </Pagination>
+                {[...Array(totalPages)].map((_, index) => (
+                  <Pagination.Item
+                    key={index}
+                    active={index + 1 === currentPage}
+                    onClick={() => handlePageChange(index + 1)}
+                  >
+                    {index + 1}
+                  </Pagination.Item>
+                ))}
+              </Pagination>
             </div>
           </div>
         </div>
       </div>
 
+
+
       {/* Edit Modal */}
-    
-{/* Edit Modal */}
-<Modal show={showEditModal} onHide={handleCloseEditModal}>
-  <Modal.Header closeButton>
-    <Modal.Title>Edit Row</Modal.Title>
-  </Modal.Header>
-  <Modal.Body>
-    <Form>
-      {headers
-        .filter(header => header !== 'lastModifiedBy')
-        .map((header) => (
-          <Form.Group key={header} controlId={header}>
-            <Form.Label>{header}</Form.Label>
-            
-            {header === 'roles' ? (
-              
-              <Select
-              mode="multiple"
-              defaultValue={editData ? editData[header] : ['']}             
-              onChange={(value) => {
-                // Check if "VISITOR" is selected
-                if (value.length === 0) {
-                  message.error('At least "VISITOR" should be selected');
-                  value.push('VISITOR'); // Ensure "VISITOR" remains selected
-                } else if (!value.includes('VISITOR')) {
-                  // If "VISITOR" is not included, add it
-                  message.error('"VISITOR" should be selected');
-                }
-            
-                // Update state
-                setEditData({ ...editData, [header]: value });
-              }}
-              options={rolesOptions.map(role => ({ value: role, label: role }))}
-              style={{ width: '100%' }}
-              getPopupContainer={(trigger) => trigger.parentNode}
-            />
-            
-            ) : (
-              <Form.Control
-                type="text"
-                defaultValue={editData ? editData[header] : ''}
-                onChange={(e) => setEditData({ ...editData, [header]: e.target.value })} // Allow editing
-              />
-            )}
-
-          </Form.Group>
-      ))}
-    </Form>
-  </Modal.Body>
-  <Modal.Footer>
-    <Button variant="secondary" onClick={handleCloseEditModal}>
-      Close
-    </Button>
-    <Button variant="primary" onClick={handleSaveChanges}>
-      Save Changes
-    </Button>
-  </Modal.Footer>
-</Modal>
-
-
-
-      {/* Delete Confirmation Modal */}
-      <Modal show={showDeleteConfirm} onHide={() => setShowDeleteConfirm(false)}>
+      <Modal show={showEditModal} onHide={handleCloseEditModal}>
         <Modal.Header closeButton>
-          <Modal.Title>Delete Confirmation</Modal.Title>
+          <Modal.Title>Edit Row</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Are you sure you want to delete this item?</Modal.Body>
+        <Modal.Body>
+          <Form>
+            {headers
+              .filter(header => header !== 'lastModifiedBy')
+              .map((header) => (
+                <Form.Group key={header} controlId={header}>
+                  <Form.Label>{header}</Form.Label>
+
+                  {header === 'roles' ? (
+
+                    <Select
+                      mode="multiple"
+                      defaultValue={editData ? editData[header] : ['']}
+                      onChange={(value) => {
+                        // Check if "VISITOR" is selected
+                        if (value.length === 0) {
+                          message.error('At least "VISITOR" should be selected');
+                          value.push('VISITOR'); // Ensure "VISITOR" remains selected
+                        } else if (!value.includes('VISITOR')) {
+                          // If "VISITOR" is not included, add it
+                          message.error('"VISITOR" should be selected');
+                        }
+
+                        // Update state
+                        setEditData({ ...editData, [header]: value });
+                      }}
+                      options={rolesOptions.map(role => ({ value: role, label: role }))}
+                      style={{ width: '100%' }}
+                      getPopupContainer={(trigger) => trigger.parentNode}
+                    />
+
+                  ) : (
+                    <Form.Control
+                      type="text"
+                      defaultValue={editData ? editData[header] : ''}
+                      onChange={(e) => setEditData({ ...editData, [header]: e.target.value })} // Allow editing
+                    />
+                  )}
+
+                </Form.Group>
+              ))}
+          </Form>
+        </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowDeleteConfirm(false)}>
-            Cancel
+          <Button variant="secondary" onClick={handleCloseEditModal}>
+            Close
           </Button>
-          <Button variant="danger" onClick={confirmDelete}>
-            Delete
+          <Button variant="primary" onClick={handleSaveChanges}>
+            Save Changes
           </Button>
         </Modal.Footer>
       </Modal>
@@ -376,6 +353,91 @@ const DataTable = ( {
           </Button>
         </Modal.Footer>
       </Modal>
+
+
+      {/* Delete Confirmation Modal */}
+      <Modal show={showDeleteConfirm} onHide={() => setShowDeleteConfirm(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Delete Confirmation</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Are you sure you want to delete this item?</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowDeleteConfirm(false)}>
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={confirmDelete}>
+            Delete
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+
+
+      {/* Reset Password Modal */}
+      <Modal show={showResetPWDModel} onHide={handleResetCancel}>
+        <Modal.Header closeButton>
+          <Modal.Title>Reset Password</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group controlId="formPassword">
+              <Form.Label>Password</Form.Label>
+              <Form.Control
+                type="password"
+                placeholder="Enter password"
+                required
+                minLength="6"
+                onChange={(e) => setPassword(e.target.value)} // Hook to update password
+              />
+              {password.length < 6 && < Form.Text className="text-danger">
+                Password must be at least 6 characters long.
+              </Form.Text>}
+            </Form.Group>
+
+            <Form.Group controlId="formConfirmPassword">
+              <Form.Label>Confirm Password</Form.Label>
+              <Form.Control
+                type="password"
+                placeholder="Confirm password"
+                required
+                onChange={(e) => setConfirmPassword(e.target.value)} // Hook to update confirm password
+              />
+              {password !== confirmPassword && (
+                <Form.Text className="text-danger">
+                  Passwords do not match!
+                </Form.Text>
+              )}
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+                    <Modal.Footer>
+              <Button variant="secondary" onClick={handleResetCancel}>
+                Cancel
+              </Button>
+              <Button variant="primary" type="submit" disabled={password !== confirmPassword} onClick={handleResetFormSubmit}>
+                Submit
+              </Button>
+            </Modal.Footer>
+      </Modal>
+
+
+      {/* Reset password Confirmation Modal */}
+      <Modal show={showResetPWDConfirm} onHide={() => setShowResetPWDConfirm(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Reset Password Confirmation</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Are you sure you want to Reset Password?</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowResetPWDConfirm(false)}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={confirmResetPassword}>
+            Confirm
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+
     </div>
   );
 };

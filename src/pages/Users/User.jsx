@@ -15,8 +15,6 @@ const UserDashboard = () => {
   const currentEmail = getEmail();
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [isResetModalVisible, setIsResetModalVisible] = useState(false);
-  const [resetDto, setResetDto] = useState(null);
-  const [resetRow, setResetRow] = useState(null);
 
 
   useEffect(() => {
@@ -30,7 +28,7 @@ const UserDashboard = () => {
   const fetchUserData = async () => {
     setIsLoading(true);  // Show loading state
     try {
-      const response = await ApiClient.get('/user/');
+      const response = await ApiClient.get('/user');
       console.log('API Response:', response);
       if (response.status === 200 && response.data) {
         setData(response.data.data || []);  // Ensure data is an array
@@ -55,26 +53,8 @@ const UserDashboard = () => {
     setIsModalVisible(false);
     form.resetFields();
   };
-  const handleResetCancel = () => {
-    setIsResetModalVisible(false);
-    form.resetFields();
-  }
-  const handleResetFormSubmit = async () => {
-    try{
-    const inputData = await form.validateFields();
-    setResetDto({
-        id: resetRow.id,
-        password: inputData.password
-      });
-      confirmReset();
-    }catch(error){
-      console.log('Validation Failed:', error);
-    }
-  }
-  const confirmReset = () => {
-    handleResetPassword()
-  }
-  const handleResetPassword = async () => {
+
+  const handleResetPassword = async (resetDto) => {
     await ApiClient.post('/user/reset-password', resetDto)
       .then((response) => {
         if (response.data.status) {
@@ -98,10 +78,62 @@ const UserDashboard = () => {
     setIsResetModalVisible(false);
     form.resetFields();
   }
-  const onResetPassword = (row) => {
-    setIsResetModalVisible(true);
-    setResetRow(row);
+  const handleBlock = async(row) => {
+   
+    try{
+      await ApiClient.post('/user/' + row.id + '/status/ACTIVE').
+     then((response) => {
+       console.log('Response:', JSON.stringify(response.data));
+       if (response.data.status == true) {
+         message.success(`User ${row.email} active successfully!`);
+         fetchUserData();
+       }
+       else {
+         message.error(response.data.error.message);
+       }
+     }).catch((error) => {   
+       if (error?.response) {
+         message.error(`Failed to active user  ${row.email}. Please try again.`);
+         message.error(error.response.data.error.message);
+       } else {
+         message.error(`Failed to active user  ${row.email}. Please try again.`);
+         message.error(error.message);
+       }
+     });
+
+   }catch(error){
+     message.error(`Failed to active user  ${row.email}. Please try again.`);
+   }
+    console.log('active')
   }
+  const handleActivate = async (row) => {
+  
+    try{
+      await ApiClient.post('/user/' + row.id + '/status/BLOCKED').
+     then((response) => {
+       console.log('Response:', JSON.stringify(response.data));
+       if (response.data.status == true) {
+         message.success(`User ${row.email} blocked successfully!`);
+         fetchUserData();
+       }
+       else {
+         message.error(response.data.error.message);
+       }
+     }).catch((error) => {   
+       if (error?.response) {
+         message.error(`Failed to blocked user  ${row.email}. Please try again.`);
+         message.error(error.response.data.error.message);
+       } else {
+         message.error(`Failed to blocked user  ${row.email}. Please try again.`);
+         message.error(error.message);
+       }
+     });
+
+   }catch(error){
+     message.error(`Failed to blocked user  ${row.email}. Please try again.`);
+   }
+  }
+
   // Handle form submission
   const handleFormSubmit = async () => {
     try {
@@ -198,7 +230,7 @@ const UserDashboard = () => {
       roles: parseRoles(editData.roles),
     }
 
-    await ApiClient.put('/user/', reqData)
+    await ApiClient.put('/user', reqData)
       .then((response) => {
         if (response.data.status) {
           message.success('User updated successfully');
@@ -221,9 +253,9 @@ const UserDashboard = () => {
   }
 
 
-  const handleDeleteAPI = async (id) => {
+  const handleDeleteAPI = async (row) => {
 
-    await ApiClient.delete('/user/' + id)
+    await ApiClient.delete('/user/' + row.id)
       .then((response) => {
         if (response.data.status) {
           message.success('User delete successfully');
@@ -258,7 +290,10 @@ const UserDashboard = () => {
         {isLoading ? (
           <p>Loading users...</p>
         ) : (
-          <DataTable heading="List of all users" data={data} onEdit={handleEditAPI} onDelete={handleDeleteAPI} restrictedItem={['status']} refreshData={fetchUserData} onResetPassword={onResetPassword} />
+          <DataTable heading="List of all users" data={data} onEdit={handleEditAPI} 
+                    onDelete={handleDeleteAPI} restrictedItem={['status']}
+                    onBlock={handleBlock} onActive={handleActivate}
+                    onResetPasswordUser={handleResetPassword}  />
         )}
         { /* add User   */}
         <Modal
@@ -367,48 +402,6 @@ const UserDashboard = () => {
               </div>
             </Form.Item>
 
-          </Form>
-        </Modal>
-
-        {/* Reset Password Modal */}
-        <Modal
-          title="Reset Password"
-          visible={isResetModalVisible}
-          onCancel={handleResetCancel}
-          okText="Submit"
-          cancelText="Cancel"
-          onOk={handleResetFormSubmit}  // Form submission handler
-        >
-          <Form form={form} layout="vertical">
-            <Form.Item
-              label="Password"
-              name="password"
-              rules={[
-                { required: true, message: 'Please enter the password' },
-                { min: 6, message: 'Password must be at least 6 characters long' }
-              ]}
-            >
-              <Input type="password" />
-            </Form.Item>
-
-            <Form.Item
-              label="Confirm Password"
-              name="confirmPassword"
-              dependencies={['password']}
-              rules={[
-                { required: true, message: 'Please confirm the password' },
-                ({ getFieldValue }) => ({
-                  validator(_, value) {
-                    if (!value || getFieldValue('password') === value) {
-                      return Promise.resolve();
-                    }
-                    return Promise.reject(new Error('Passwords do not match!'));
-                  }
-                })
-              ]}
-            >
-              <Input type="password" />
-            </Form.Item>
           </Form>
         </Modal>
 
