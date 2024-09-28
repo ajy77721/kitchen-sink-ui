@@ -318,7 +318,6 @@ const Sidebar = () => {
                       <li>
                         <div className="p-3 card-header justify-content-between border-bottom rounded-top">
                           <div className="header-title topmenu">
-                            <a >Profile</a>
                             <a onClick={showModal}>Change Password</a>
                           </div>
                         </div>
