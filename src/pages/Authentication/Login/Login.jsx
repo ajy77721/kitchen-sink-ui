@@ -12,6 +12,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
+
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
@@ -58,11 +59,19 @@ const Login = () => {
       }
     }
   };
+
   useEffect(() => {
     const token = localStorage.getItem("userToken");
     if (!!token)
       navigate("/profile");
   }, []);
+
+  useEffect(() => {
+   const errorMessage=localStorage.getItem("errorMessages");
+    if(errorMessage){
+      setError(errorMessage);
+    }
+  },[]);
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
@@ -140,6 +149,9 @@ const Login = () => {
       });
   };
 
+  window.addEventListener("beforeunload", () => {
+    localStorage.removeItem("errorMessages"); 
+  });
 
 
 

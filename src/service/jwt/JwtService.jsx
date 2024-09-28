@@ -35,6 +35,7 @@ export const getEmail = () => {
 };
 export const clearSession = () => {
   localStorage.removeItem('userToken');
+  localStorage.setItem('errorMessages', 'Something went wrong. Please refresh the page and log in again.');
   window.location.href = '/';
 }
 
@@ -50,3 +51,4 @@ export const isVisitorRole = () => {
   const role = getUserRole();
   return role.includes('VISITOR') && !role.includes('ADMIN') && !role.includes('USER');
 }
+
