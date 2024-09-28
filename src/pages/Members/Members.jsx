@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import './Members.css';
-import DataTable from '../../components/Table/Table';
-import { Modal, Button, Form, Input, Select, message } from 'antd';
-import ApiClient from '../../service/apiclient/AxiosClient';
-import { clearSession } from '../../service/jwt/JwtService';
+import React, { useEffect, useState } from 'react'; // React imports
+import { Modal, Button, Form, Input, Select, message } from 'antd'; // Ant Design components
+import PhoneInput from 'react-phone-input-2'; // Phone input component
+import 'react-phone-input-2/lib/style.css'; // Phone input styles
+import './Members.css'; // Local CSS import
+import DataTable from '../../components/Table/Table'; // Local component import
+import ApiClient from '../../service/apiclient/AxiosClient'; // Local service import
+import { clearSession } from '../../service/jwt/JwtService'; // Local JWT service import
 
 const { Option } = Select;
 
@@ -454,7 +455,10 @@ const MemberDashboard = () => {
               label="Phone Number"
               name="phoneNumber"
             >
-              <Input type="text" maxLength={10} />
+                <PhoneInput
+                country={'in'}
+                onChange={(phone) => form.setFieldsValue({ phoneNumber: phone })} // Update form value
+              />
             </Form.Item>
 
             <Form.Item
@@ -465,7 +469,7 @@ const MemberDashboard = () => {
                 { min: 6, message: 'Password must be at least 6 characters long' }
               ]}
             >
-              <Input type="password" />
+             <Input.Password />
             </Form.Item>
 
             <Form.Item
@@ -484,7 +488,7 @@ const MemberDashboard = () => {
                 })
               ]}
             >
-              <Input type="password" />
+             <Input.Password />
             </Form.Item>
 
           </Form>

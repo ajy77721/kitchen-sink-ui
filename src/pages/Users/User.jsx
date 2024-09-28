@@ -4,12 +4,14 @@ import { Modal, Button, Form, Input, Select, message, Checkbox } from 'antd';
 import DataTable from '../../components/Table/Table';
 import ApiClient from '../../service/apiclient/AxiosClient';
 import { clearSession, getEmail, isAdminRole, isVisitorRole } from '../../service/jwt/JwtService';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
 
 const { Option } = Select;
 
 const UserDashboard = () => {
   const [data, setData] = useState([]);
-//  const [isLoading, setIsLoading] = useState(false);  // Add loading state
+  //  const [isLoading, setIsLoading] = useState(false);  // Add loading state
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
   const currentEmail = getEmail();
@@ -24,14 +26,14 @@ const UserDashboard = () => {
   };
   // Function to fetch user data from API
   const fetchUserData = async () => {
-   // setIsLoading(true);  // Show loading state
+    // setIsLoading(true);  // Show loading state
     try {
       const response = await ApiClient.get('/user');
       console.log('API Response:', response);
       if (response.status === 200 && response.data) {
-        const users=response.data.data || []
+        const users = response.data.data || []
         setData(users);
-         // Ensure data is an array
+        // Ensure data is an array
       } else {
         console.error('Unexpected API response:', response);
         message.error('Failed to load user data');
@@ -44,9 +46,9 @@ const UserDashboard = () => {
             clearSession();
             break;
           case 403:
-          //  setIsLoading(true);
+            //  setIsLoading(true);
             message.error(error.response.data.error.message);
-            break;  
+            break;
           case 400:
             message.error('Bad Request: ' + error.response.data.error.message);
             break;
@@ -64,7 +66,7 @@ const UserDashboard = () => {
         message.error('Error fetching user data. Please try again.');
       }
     } finally {
-     // setIsLoading(false);  // Hide loading state
+      // setIsLoading(false);  // Hide loading state
     }
   };
   // Show the modal for adding new user
@@ -235,7 +237,7 @@ const UserDashboard = () => {
       }
       // Here you can add your API call to submit the form data
       try {
-        await ApiClient.post('/user/', addUserDTO).then((response) => {
+        await ApiClient.post('/user', addUserDTO).then((response) => {
           if (response?.data?.status) {
             form.resetFields();
             setSelectedStatus(null);
@@ -435,10 +437,10 @@ const UserDashboard = () => {
         {/* Display loading message when fetching data */}
         {isVisitorRole() ? (
           <div>
-          <p  className="position-relative custom-page">
-            You do not have permission to access this functionality. Please contact the Administrator.
-          </p>
-        </div>
+            <p className="position-relative custom-page">
+              You do not have permission to access this functionality. Please contact the Administrator.
+            </p>
+          </div>
         ) : (
           <DataTable heading="List of all users" data={data} onEdit={handleEditAPI}
             onDelete={handleDeleteAPI} restrictedItem={['status']}
@@ -477,7 +479,10 @@ const UserDashboard = () => {
               label="Phone Number"
               name="phoneNumber"
             >
-              <Input type="text" maxLength={10} />
+              <PhoneInput
+                country={'in'}
+                onChange={(phone) => form.setFieldsValue({ phoneNumber: phone })} // Update form value
+              />
             </Form.Item>
             <Form.Item
               label="Password"
@@ -487,7 +492,7 @@ const UserDashboard = () => {
                 { min: 6, message: 'Password must be at least 6 characters long' }
               ]}
             >
-              <Input type="password" />
+              <Input.Password />
             </Form.Item>
 
             <Form.Item
@@ -506,7 +511,7 @@ const UserDashboard = () => {
                 })
               ]}
             >
-              <Input type="password" />
+              <Input.Password />
             </Form.Item>
 
 

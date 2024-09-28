@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
 import { Modal, Button, Form, Input, Select, message } from 'antd';
 import "./Login.css";
 import ApiClient from "../../../service/apiclient/AxiosClient";
@@ -67,11 +69,11 @@ const Login = () => {
   }, []);
 
   useEffect(() => {
-   const errorMessage=localStorage.getItem("errorMessages");
-    if(errorMessage){
+    const errorMessage = localStorage.getItem("errorMessages");
+    if (errorMessage) {
       setError(errorMessage);
     }
-  },[]);
+  }, []);
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
@@ -119,7 +121,7 @@ const Login = () => {
               switch (error.response.status) {
                 case 401:
                   message.error(`Unauthorized: Please logout and clean your user token.`);
-                 clearSession();
+                  clearSession();
                   break;
                 case 400:
                   message.error(`Bad Request: ${error.response.data.error.message}`);
@@ -141,7 +143,7 @@ const Login = () => {
             } else {
               message.error('Failed to create account. Please try again.');
               message.error(error.message);
-            }   
+            }
           });
       })
       .catch(info => {
@@ -150,7 +152,7 @@ const Login = () => {
   };
 
   window.addEventListener("beforeunload", () => {
-    localStorage.removeItem("errorMessages"); 
+    localStorage.removeItem("errorMessages");
   });
 
 
@@ -172,7 +174,6 @@ const Login = () => {
                   <div className="card-body">
                     <div className="auth-form">
                       <h2 className="text-center mb-4">Login your account</h2>
-
                       <form onSubmit={handleLogin}>
                         <div className="form-floating mb-3">
                           <input
@@ -187,7 +188,7 @@ const Login = () => {
                         </div>
                         <div className="form-floating mb-2 position-relative">
                           <input
-                            type={showPassword ? "text" : "password"}
+                            type={showPassword ? 'text' : 'password'}
                             className="form-control"
                             id="Password"
                             placeholder="Password"
@@ -198,21 +199,14 @@ const Login = () => {
                           <button
                             type="button"
                             className="btn btn-link position-absolute"
-                            style={{ right: '-190px', top: '50%', transform: 'translateY(-50%)' }}
+                            style={{ right: '10px', top: '50%', transform: 'translateY(-50%)' }}
                             onClick={() => setShowPassword(!showPassword)}
                           >
-                            <i className={showPassword ? "fas fa-eye-slash" : "fas fa-eye"}></i>
+                            <i className={showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'}></i>
                           </button>
                         </div>
-
-
-
                         <div className="text-center mt-3">
-                          <button
-                            type="submit"
-                            className="btn btn-primary"
-                            id="primary-btn"
-                          >
+                          <button type="submit" className="btn btn-primary" id="primary-btn">
                             Sign In
                           </button>
                         </div>
@@ -221,7 +215,6 @@ const Login = () => {
                             {error}
                           </div>
                         )}
-
                       </form>
                     </div>
                   </div>
@@ -264,7 +257,11 @@ const Login = () => {
             label="Phone Number"
             name="phoneNumber"
           >
-            <Input type="text" maxLength={10} />
+            <PhoneInput
+                country={'in'}
+                onChange={(phone) => form.setFieldsValue({ phoneNumber: phone })} // Update form value
+              />
+
           </Form.Item>
 
           <Form.Item
@@ -275,7 +272,7 @@ const Login = () => {
               { min: 6, message: 'Password must be at least 6 characters long' }
             ]}
           >
-            <Input type="password" />
+            <Input.Password />
           </Form.Item>
 
           <Form.Item
@@ -294,7 +291,7 @@ const Login = () => {
               })
             ]}
           >
-            <Input type="password" />
+            <Input.Password />
           </Form.Item>
         </Form>
       </Modal>

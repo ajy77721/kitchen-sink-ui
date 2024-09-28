@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Pagination, Spinner, Button, Modal, Form } from 'react-bootstrap';
-import './Table.css';
-import { message, Select, Input } from "antd";
-import { Await } from 'react-router-dom';
-import { getEmail } from '../../service/jwt/JwtService';
+import { message, Select, Input } from 'antd';
+import PhoneInput from 'react-phone-input-2'; // Phone input import
+import 'react-phone-input-2/lib/style.css'; // Phone input styles
+import { getEmail } from '../../service/jwt/JwtService'; // JWT service import
+import './Table.css'; // CSS file import
+
 const { Option } = Select;
+
 
 const DataTable = ({
   heading, data, loading, onEdit, onDelete, mongoId,
@@ -313,61 +316,65 @@ const DataTable = ({
 
       {/* Edit Modal */}
       <Modal show={showEditModal} onHide={handleCloseEditModal}>
-        <Modal.Header closeButton>
-          <Modal.Title>Edit Row</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            {headers
-              .filter(header => header !== 'lastModifiedBy')
-              .map((header) => (
-                <Form.Group key={header} controlId={header}>
-                  <Form.Label>{header}</Form.Label>
+      <Modal.Header closeButton>
+        <Modal.Title>Edit Row</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Form>
+          {headers
+            .filter(header => header !== 'lastModifiedBy')
+            .map((header) => (
+              <Form.Group key={header} controlId={header}>
+                <Form.Label>{header}</Form.Label>
 
-                  {header === 'roles' ? (
+                {header === 'roles' ? (
+                  <Select
+                    mode="multiple"
+                    defaultValue={editData ? editData[header] : ['']}
+                    onChange={(value) => {
+                      // Check if "VISITOR" is selected
+                      if (value.length === 0) {
+                        message.error('At least "VISITOR" should be selected');
+                        value.push('VISITOR'); // Ensure "VISITOR" remains selected
+                      } else if (!value.includes('VISITOR')) {
+                        // If "VISITOR" is not included, add it
+                        message.error('"VISITOR" should be selected');
+                      }
 
-                    <Select
-                      mode="multiple"
-                      defaultValue={editData ? editData[header] : ['']}
-                      onChange={(value) => {
-                        // Check if "VISITOR" is selected
-                        if (value.length === 0) {
-                          message.error('At least "VISITOR" should be selected');
-                          value.push('VISITOR'); // Ensure "VISITOR" remains selected
-                        } else if (!value.includes('VISITOR')) {
-                          // If "VISITOR" is not included, add it
-                          message.error('"VISITOR" should be selected');
-                        }
-
-                        // Update state
-                        setEditData({ ...editData, [header]: value });
-                      }}
-                      options={rolesOptions.map(role => ({ value: role, label: role }))}
-                      style={{ width: '100%' }}
-                      getPopupContainer={(trigger) => trigger.parentNode}
-                    />
-
-                  ) : (
-                    <Form.Control
-                      type="text"
-                      defaultValue={editData ? editData[header] : ''}
-                      onChange={(e) => setEditData({ ...editData, [header]: e.target.value })} // Allow editing
-                    />
-                  )}
-
-                </Form.Group>
-              ))}
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseEditModal}>
-            Close
-          </Button>
-          <Button variant="primary" onClick={handleSaveChanges}>
-            Save Changes
-          </Button>
-        </Modal.Footer>
-      </Modal>
+                      // Update state
+                      setEditData({ ...editData, [header]: value });
+                    }}
+                    options={rolesOptions.map(role => ({ value: role, label: role }))}
+                    style={{ width: '100%' }}
+                    getPopupContainer={(trigger) => trigger.parentNode}
+                  />
+                ) : header === 'phoneNumber' ? (
+                  <PhoneInput
+                    country={'in'}
+                    value={editData ? editData[header] : ''}
+                    onChange={(phone) => setEditData({ ...editData, [header]: phone })} // Update form value
+                    style={{ width: '100%' }}
+                  />
+                ) : (
+                  <Form.Control
+                    type="text"
+                    defaultValue={editData ? editData[header] : ''}
+                    onChange={(e) => setEditData({ ...editData, [header]: e.target.value })} // Allow editing
+                  />
+                )}
+              </Form.Group>
+            ))}
+        </Form>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={handleCloseEditModal}>
+          Close
+        </Button>
+        <Button variant="primary" onClick={handleSaveChanges}>
+          Save Changes
+        </Button>
+      </Modal.Footer>
+    </Modal>
 
       {/* Save Changes Confirmation Modal */}
       <Modal show={showSaveConfirm} onHide={() => setShowSaveConfirm(false)}>
@@ -413,7 +420,7 @@ const DataTable = ({
           <Form>
             <Form.Group controlId="formPassword">
               <Form.Label>Password</Form.Label>
-              <Form.Control
+              <Input.Password
                 type="password"
                 placeholder="Enter password"
                 required
@@ -427,7 +434,7 @@ const DataTable = ({
 
             <Form.Group controlId="formConfirmPassword">
               <Form.Label>Confirm Password</Form.Label>
-              <Form.Control
+              <Input.Password
                 type="password"
                 placeholder="Confirm password"
                 required
