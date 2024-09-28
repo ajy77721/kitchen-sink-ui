@@ -102,7 +102,7 @@ const Login = () => {
           password: values.password
         });
 
-        await ApiClient.post('/member/register/', data)
+        await ApiClient.post('/member/register', data)
           .then((response) => {
             console.log('Response:', JSON.stringify(response.data));
 
