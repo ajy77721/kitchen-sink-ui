@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import showMessage from '../../../utils/Message';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
-import { Modal, Button, Form, Input, Select, message } from 'antd';
+import { Modal, Form, Input, Select } from 'antd';
 import "./Login.css";
 import ApiClient from "../../../service/apiclient/AxiosClient";
-import { clearSession, isLoggedIn } from "../../../service/jwt/JwtService";
+import { clearSession } from "../../../service/jwt/JwtService";
 const { Option } = Select;
 const Login = () => {
   const [userName, setUserName] = useState("");
@@ -18,9 +19,13 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
+      if (!userName.trim() || !password.trim()) {
+        setError("Please enter your email and password.");
+        return;
+    }
       const response = await ApiClient.post(`/auth/login`, {
-        email: userName,
-        password: password
+        email: userName.trim(),
+        password: password.trim()
       });
       const token = response.data.data.token;
       localStorage.setItem("userToken", token);
@@ -96,23 +101,23 @@ const Login = () => {
 
 
         let data = JSON.stringify({
-          name: values.name,
-          email: values.email,
-          phoneNumber: values.phoneNumber,
-          password: values.password
+          name: values.name?.trim(),
+          email: values.email?.trim(),
+          phoneNumber: values.phoneNumber?.trim(),
+          password: values.password?.trim()
         });
 
         await ApiClient.post('/member/register', data)
           .then((response) => {
             console.log('Response:', JSON.stringify(response.data));
 
-            if (response.data.status == true) {
-              message.success('Account created successfully!');
+            if (response.data.status === true) {
+              showMessage.success('Account created successfully!');
               form.resetFields();
               setIsModalVisible(false);
             }
             else {
-              message.error(response.data.error.message);
+              showMessage.error(response.data.error.message);
             }
 
           })
@@ -120,29 +125,29 @@ const Login = () => {
             if (error?.response) {
               switch (error.response.status) {
                 case 401:
-                  message.error(`Unauthorized: Please logout and clean your user token.`);
+                  showMessage.error(`Unauthorized: Please logout and clean your user token.`);
                   clearSession();
                   break;
                 case 400:
-                  message.error(`Bad Request: ${error.response.data.error.message}`);
+                  showMessage.error(`Bad Request: ${error.response.data.error.message}`);
                   break;
                 case 500:
-                  message.error(`Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.`);
+                  showMessage.error(`Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.`);
                   break;
                 case 404:
-                  message.error(`Not Found: The requested resource could not be found.`);
+                  showMessage.error(`Not Found: The requested resource could not be found.`);
                   break;
                 case 412:
-                  message.error(`Precondition Failed: ${error.response.data.error.message}`);
+                  showMessage.error(`Precondition Failed: ${error.response.data.error.message}`);
                   break;
                 default:
-                  message.error('Failed to create account. Please try again.');
-                  message.error(error.response.data.error.message);
+                  showMessage.error('Failed to create account. Please try again.');
+                  showMessage.error(error.response.data.error.message);
                   break;
               }
             } else {
-              message.error('Failed to create account. Please try again.');
-              message.error(error.message);
+              showMessage.error('Failed to create account. Please try again.');
+              showMessage.error(error.message);
             }
           });
       })

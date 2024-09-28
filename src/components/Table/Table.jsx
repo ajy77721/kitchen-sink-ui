@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Pagination, Spinner, Button, Modal, Form } from 'react-bootstrap';
-import { message, Select, Input } from 'antd';
+import { Select, Input } from 'antd';
+import showMessage from '../../utils/Message'; // Custom message import
 import PhoneInput from 'react-phone-input-2'; // Phone input import
 import 'react-phone-input-2/lib/style.css'; // Phone input styles
 import { getEmail } from '../../service/jwt/JwtService'; // JWT service import
@@ -65,7 +66,7 @@ const DataTable = ({
 
   const handleEdit = (row) => {
     if(row?.email === currentEmail) {
-      message.error('You cannot edit your own account');
+      showMessage.error('You cannot edit your own account');
       return;
     }
     setEditData(row);
@@ -79,7 +80,7 @@ const DataTable = ({
 
   const handleDelete = (row) => {
     if(row?.email === currentEmail) {
-      message.error('You cannot edit your own account');
+      showMessage.error('You cannot edit your own account');
       return;
     }
     setDeleteRowData(row);
@@ -131,7 +132,7 @@ const DataTable = ({
 
   const handleBlock =  (row) => {
     if(row?.email === currentEmail) {
-      message.error('You cannot edit your own account');
+      showMessage.error('You cannot edit your own account');
       return;
     }
     onBlock(row)
@@ -139,7 +140,7 @@ const DataTable = ({
   }
   const handleActivate =  (row) => {
     if(row?.email === currentEmail) {
-      message.error('You cannot edit your own account');
+      showMessage.error('You cannot edit your own account');
       return;
     }
     onActive(row)
@@ -148,7 +149,7 @@ const DataTable = ({
 
   const handleApprove = (row) => {
     if(row?.email === currentEmail) {
-      message.error('You cannot edit your own account');
+      showMessage.error('You cannot edit your own account');
       return;
     }
     console.log('approve')
@@ -156,7 +157,7 @@ const DataTable = ({
   }
   const handleDecline = (row) => {
     if(row?.email === currentEmail) {
-      message.error('You cannot edit your own account');
+      showMessage.error('You cannot edit your own account');
       return;
     }
     console.log('decline')
@@ -164,7 +165,7 @@ const DataTable = ({
   }
   const handleReset = (row) => {
     if(row?.email === currentEmail) {
-      message.error('You cannot edit your own account');
+      showMessage.error('You cannot edit your own account');
       return;
     }
     setResetPasswordDataID(row.id)
@@ -334,11 +335,11 @@ const DataTable = ({
                     onChange={(value) => {
                       // Check if "VISITOR" is selected
                       if (value.length === 0) {
-                        message.error('At least "VISITOR" should be selected');
+                        showMessage.error('At least "VISITOR" should be selected');
                         value.push('VISITOR'); // Ensure "VISITOR" remains selected
                       } else if (!value.includes('VISITOR')) {
                         // If "VISITOR" is not included, add it
-                        message.error('"VISITOR" should be selected');
+                        showMessage.error('"VISITOR" should be selected');
                       }
 
                       // Update state

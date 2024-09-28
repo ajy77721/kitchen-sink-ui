@@ -21,6 +21,9 @@ const ApiClient = axios.create({
       }
       return config;
     },
+    (response) => {
+      return response;
+  },
     (error) => {
       return Promise.reject(error);
     }

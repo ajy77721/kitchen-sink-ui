@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react'; // React imports
-import { Modal, Button, Form, Input, Select, message } from 'antd'; // Ant Design components
+import { Modal, Button, Form, Input, Select } from 'antd'; // Ant Design components
+import showMessage from '../../utils/Message';
 import PhoneInput from 'react-phone-input-2'; // Phone input component
 import 'react-phone-input-2/lib/style.css'; // Phone input styles
 import './Members.css'; // Local CSS import
 import DataTable from '../../components/Table/Table'; // Local component import
 import ApiClient from '../../service/apiclient/AxiosClient'; // Local service import
 import { clearSession } from '../../service/jwt/JwtService'; // Local JWT service import
-
 const { Option } = Select;
 
 const MemberDashboard = () => {
@@ -25,24 +25,24 @@ const MemberDashboard = () => {
       if (error.response) {
         switch (error.response.status) {
           case 401:
-            message.error('Unauthorized: Please logout and clean your user token.');
+            showMessage.error('Unauthorized: Please logout and clean your user token.');
             clearSession();
             break;
           case 400:
-            message.error('Bad Request: ' + error.response.data.error.message);
+            showMessage.error('Bad Request: ' + error.response.data.error.message);
             break;
           case 404:
-            message.error('Not Found: The mining data could not be found.');
+            showMessage.error('Not Found: The mining data could not be found.');
             break;
           case 500:
-            message.error('Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.');
+            showMessage.error('Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.');
             break;
           default:
-            message.error('Failed to fetch data: ' + error.response.data.error.message);
+            showMessage.error('Failed to fetch data: ' + error.response.data.error.message);
             break;
         }
       } else {
-        message.error('Failed to fetch data. Please try again.');
+        showMessage.error('Failed to fetch data. Please try again.');
       }
     }
   };
@@ -68,55 +68,55 @@ const MemberDashboard = () => {
       await ApiClient.post('/member/reset-password', resetDto)
         .then((response) => {
           if (response.data.status) {
-            message.success('Password reset successfully');
+            showMessage.success('Password reset successfully');
             fetchUserData();
             //   setIsResetModalVisible(false);
           } else if (response.status === 409) {
 
-            message.error('Failed to reset password');
-            message.error(response.data.data.error);
+            showMessage.error('Failed to reset password');
+            showMessage.error(response.data.data.error);
             fetchUserData();
           } else {
-            message.error('Failed to reset password');
-            message.error(response.data.data.error);
+            showMessage.error('Failed to reset password');
+            showMessage.error(response.data.data.error);
           }
         })
         .catch((error) => {
           if (error?.response) {
             switch (error.response.status) {
               case 401:
-                message.error('Unauthorized: Please logout and clean your user token.');
+                showMessage.error('Unauthorized: Please logout and clean your user token.');
                 clearSession();
                 break;
               case 400:
-                message.error('Bad Request: ' + error.response.data.error.message);
+                showMessage.error('Bad Request: ' + error.response.data.error.message);
                 break;
               case 404:
-                message.error('Not Found: Could not find the resource.');
+                showMessage.error('Not Found: Could not find the resource.');
                 break;
               case 412:
-                message.error('Precondition Failed: ' + error.response.data.error.message);
+                showMessage.error('Precondition Failed: ' + error.response.data.error.message);
                 break;
               case 500:
-                message.error('Internal Server Error: Please refresh the page, log out, and log back in. If the issue persists, contact admin.');
+                showMessage.error('Internal Server Error: Please refresh the page, log out, and log back in. If the issue persists, contact admin.');
                 break;
               case 409:
-                message.error('Conflict: Failed to reset password');
-                message.error(error.response.data.error.message, 3);
+                showMessage.error('Conflict: Failed to reset password');
+                showMessage.error(error.response.data.error.message, 3);
                 fetchUserData();
                 break;
               default:
-                message.error('Failed to reset password: ' + error.response.data.error.message);
+                showMessage.error('Failed to reset password: ' + error.response.data.error.message);
                 break;
             }
           } else {
-            message.error('Failed to reset password');
-            message.error(error.message);
+            showMessage.error('Failed to reset password');
+            showMessage.error(error.message);
           }
         });
     } catch (error) {
       console.error('Error resetting password:', error);
-      message.error('Failed to reset password');
+      showMessage.error('Failed to reset password');
     }
     form.resetFields();
   }
@@ -131,48 +131,48 @@ const MemberDashboard = () => {
       })
         .then((response) => {
           if (response.data.status) {
-            message.success('Member added successfully');
+            showMessage.success('Member added successfully');
           } else {
-            message.error('Failed to add member');
-            message.error(response.data.data.error);
+            showMessage.error('Failed to add member');
+            showMessage.error(response.data.data.error);
           }
         })
         .catch((error) => {
           if (error?.response) {
             switch (error.response.status) {
               case 204:
-                message.error('No Content: ' + error.response.data.error.message);
+                showMessage.error('No Content: ' + error.response.data.error.message);
                 fetchUserData();
                 break;
               case 401:
-                message.error('Unauthorized: Please logout and clean your user token.');
+                showMessage.error('Unauthorized: Please logout and clean your user token.');
                 clearSession();
                 break;
               case 400:
-                message.error('Bad Request: ' + error.response.data.error.message);
+                showMessage.error('Bad Request: ' + error.response.data.error.message);
                 break;
               case 404:
-                message.error('Not Found: Could not find the resource.');
+                showMessage.error('Not Found: Could not find the resource.');
                 break;
               case 412:
-                message.error('Precondition Failed: ' + error.response.data.error.message);
+                showMessage.error('Precondition Failed: ' + error.response.data.error.message);
                 break;
               case 500:
-                message.error('Internal Server Error: Please refresh the page, log out, and log back in. If the issue persists, contact admin.');
+                showMessage.error('Internal Server Error: Please refresh the page, log out, and log back in. If the issue persists, contact admin.');
                 break;
               default:
-                message.error('Failed to add member: ' + error.response.data.error.message);
+                showMessage.error('Failed to add member: ' + error.response.data.error.message);
                 break;
             }
           } else {
-            message.error('Failed to add member');
-            message.error(error.message);
+            showMessage.error('Failed to add member');
+            showMessage.error(error.message);
           }
         });
       fetchUserData();
     } catch (error) {
       console.error('Error adding new member:', error);
-      message.error('Failed to add new member');
+      showMessage.error('Failed to add new member');
     }
   }
 
@@ -186,11 +186,11 @@ const MemberDashboard = () => {
           setIsModalVisible(false); // Close modal after form submission
         }).catch(info => {
           console.log('Validation Failed:', info);
-          message.error('Please enter all the required fields');
+          showMessage.error('Please enter all the required fields');
         })
     } catch (error) {
       console.log('Error:', error);
-      message.error('Failed to add new member');
+      showMessage.error('Failed to add new member');
     }
 
   }
@@ -205,45 +205,45 @@ const MemberDashboard = () => {
       })
         .then((response) => {
           if (response.data.status) {
-            message.success('Member update successfully');
+            showMessage.success('Member update successfully');
             fetchUserData();
           } else {
-            message.error('Failed to update member');
-            message.error(response.data.data.error);
+            showMessage.error('Failed to update member');
+            showMessage.error(response.data.data.error);
           }
         })
         .catch((error) => {
           if (error?.response) {
             switch (error.response.status) {
               case 401:
-                message.error('Unauthorized: Please logout and clean your user token.');
+                showMessage.error('Unauthorized: Please logout and clean your user token.');
                 clearSession();
                 break;
               case 400:
-                message.error('Bad Request: ' + error.response.data.error.message);
+                showMessage.error('Bad Request: ' + error.response.data.error.message);
                 break;
               case 404:
-                message.error('Not Found: Could not find the resource.');
+                showMessage.error('Not Found: Could not find the resource.');
                 break;
               case 412:
-                message.error('Precondition Failed: ' + error.response.data.error.message);
+                showMessage.error('Precondition Failed: ' + error.response.data.error.message);
                 break;
               case 500:
-                message.error('Internal Server Error: Please refresh the page, log out, and log back in. If the issue persists, contact admin.');
+                showMessage.error('Internal Server Error: Please refresh the page, log out, and log back in. If the issue persists, contact admin.');
                 break;
               default:
-                message.error('Failed to update member: ' + error.response.data.error.message);
+                showMessage.error('Failed to update member: ' + error.response.data.error.message);
                 break;
             }
           } else {
-            message.error('Failed to update member');
-            message.error(error.message);
+            showMessage.error('Failed to update member');
+            showMessage.error(error.message);
           }
         });
 
     } catch (error) {
       console.error('Error update  member:', error);
-      message.error('Failed to update  member');
+      showMessage.error('Failed to update  member');
     }
   }
 
@@ -253,45 +253,45 @@ const MemberDashboard = () => {
       await ApiClient.delete('/member/' + row.id)
         .then((response) => {
           if (response.data.status) {
-            message.success('Member deleted successfully');
+            showMessage.success('Member deleted successfully');
             fetchUserData();
           } else {
-            message.error('Failed to delete member');
-            message.error(response.data.data.error);
+            showMessage.error('Failed to delete member');
+            showMessage.error(response.data.data.error);
           }
         })
         .catch((error) => {
           if (error?.response) {
             switch (error.response.status) {
               case 401:
-                message.error('Unauthorized: Please logout and clean your user token.');
+                showMessage.error('Unauthorized: Please logout and clean your user token.');
                 clearSession();
                 break;
               case 400:
-                message.error('Bad Request: ' + error.response.data.error.message);
+                showMessage.error('Bad Request: ' + error.response.data.error.message);
                 break;
               case 404:
-                message.error('Not Found: Could not find the resource.');
+                showMessage.error('Not Found: Could not find the resource.');
                 break;
               case 412:
-                message.error('Precondition Failed: ' + error.response.data.error.message);
+                showMessage.error('Precondition Failed: ' + error.response.data.error.message);
                 break;
               case 500:
-                message.error('Internal Server Error: Please refresh the page, log out, and log back in. If the issue persists, contact admin.');
+                showMessage.error('Internal Server Error: Please refresh the page, log out, and log back in. If the issue persists, contact admin.');
                 break;
               default:
-                message.error('Failed to delete member: ' + error.response.data.error.message);
+                showMessage.error('Failed to delete member: ' + error.response.data.error.message);
                 break;
             }
           } else {
-            message.error('Failed to delete member');
-            message.error(error.message);
+            showMessage.error('Failed to delete member');
+            showMessage.error(error.message);
           }
         });
 
     } catch (error) {
       console.error('Error deleting member:', error);
-      message.error('Failed to delete member')
+      showMessage.error('Failed to delete member')
     }
   }
 
@@ -302,48 +302,49 @@ const MemberDashboard = () => {
       await ApiClient.post(`/member/change-status?memberId=${row.id}&status=APPROVED&userRoles=${userRoles}`)
         .then((response) => {
           if (response.data.status) {
-            message.success('Member approved successfully');
+            showMessage.success('Member approved successfully');
             fetchUserData();
           } else {
-            message.error('Failed to approve member');
-            message.error(response.data.data.error);
+            showMessage.error('Failed to approve member');
+            showMessage.error(response.data.data.error);
           }
         })
         .catch((error) => {
           if (error?.response) {
             switch (error.response.status) {
               case 204:
-                message.error('No Content: ' + error.response.data.error.message);
+                showMessage.error('No Content: ' + error.response.data.error.message);
                 fetchUserData();
+                break;
               case 401:
-                message.error('Unauthorized: Please logout and clean your user token.');
+                showMessage.error('Unauthorized: Please logout and clean your user token.');
                 clearSession()
                 break;
               case 400:
-                message.error('Bad Request: ' + error.response.data.error.message);
+                showMessage.error('Bad Request: ' + error.response.data.error.message);
                 break;
               case 404:
-                message.error('Not Found: Could not find the resource.');
+                showMessage.error('Not Found: Could not find the resource.');
                 break;
               case 412:
-                message.error('Precondition Failed: ' + error.response.data.error.message);
+                showMessage.error('Precondition Failed: ' + error.response.data.error.message);
                 break;
               case 500:
-                message.error('Internal Server Error: Please refresh the page, log out, and log back in. If the issue persists, contact admin.');
+                showMessage.error('Internal Server Error: Please refresh the page, log out, and log back in. If the issue persists, contact admin.');
                 break;
               default:
-                message.error('Failed to approve member: ' + error.response.data.error.message);
+                showMessage.error('Failed to approve member: ' + error.response.data.error.message);
                 break;
             }
           } else {
-            message.error('Failed to approve member');
-            message.error(error.message);
+            showMessage.error('Failed to approve member');
+            showMessage.error(error.message);
           }
         });
 
     } catch (error) {
       console.error('Error approving member:', error);
-      message.error('Failed to approve member')
+      showMessage.error('Failed to approve member')
     }
   }
   const handleDecline = async (row) => {
@@ -352,48 +353,49 @@ const MemberDashboard = () => {
       await ApiClient.post(`/member/change-status?memberId=${row.id}&status=DECLINED`)
         .then((response) => {
           if (response.data.status) {
-            message.success('Member declined successfully');
+            showMessage.success('Member declined successfully');
             fetchUserData();
           } else {
-            message.error('Failed to decline member');
-            message.error(response.data.data.error);
+            showMessage.error('Failed to decline member');
+            showMessage.error(response.data.data.error);
           }
         })
         .catch((error) => {
           if (error?.response) {
             switch (error.response.status) {
               case 204:
-                message.error('No Content: ' + error.response.data.error.message);
+                showMessage.error('No Content: ' + error.response.data.error.message);
                 fetchUserData();
+                break;
               case 401:
-                message.error('Unauthorized: Please logout and clean your user token.');
+                showMessage.error('Unauthorized: Please logout and clean your user token.');
                 clearSession()
                 break;
               case 400:
-                message.error('Bad Request: ' + error.response.data.error.message);
+                showMessage.error('Bad Request: ' + error.response.data.error.message);
                 break;
               case 404:
-                message.error('Not Found: Could not find the resource.');
+                showMessage.error('Not Found: Could not find the resource.');
                 break;
               case 412:
-                message.error('Precondition Failed: ' + error.response.data.error.message);
+                showMessage.error('Precondition Failed: ' + error.response.data.error.message);
                 break;
               case 500:
-                message.error('Internal Server Error: Please refresh the page, log out, and log back in. If the issue persists, contact admin.');
+                showMessage.error('Internal Server Error: Please refresh the page, log out, and log back in. If the issue persists, contact admin.');
                 break;
               default:
-                message.error('Failed to decline member: ' + error.response.data.error.message);
+                showMessage.error('Failed to decline member: ' + error.response.data.error.message);
                 break;
             }
           } else {
-            message.error('Failed to decline member');
-            message.error(error.message);
+            showMessage.error('Failed to decline member');
+            showMessage.error(error.message);
           }
         });
 
     } catch (error) {
       console.error('Error declining member:', error);
-      message.error('Failed to decline member')
+      showMessage.error('Failed to decline member')
     }
   }
 
