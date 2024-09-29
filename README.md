@@ -1,4 +1,6 @@
-# Getting Started with Create React App
+# Kitchen Sink
+
+## Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
@@ -24,7 +26,7 @@ See the section about [running tests](https://facebook.github.io/create-react-ap
 Builds the app for production to the `build` folder.\
 It correctly bundles React in production mode and optimizes the build for the best performance.
 
-The build is minified and the filenames include the hashes.\
+The build is minified, and the filenames include the hashes.\
 Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
@@ -35,9 +37,9 @@ See the section about [deployment](https://facebook.github.io/create-react-app/d
 
 If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc.) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point, you're on your own.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+You don't have to ever use `eject`. The curated feature set is suitable for small and medium deployments, and you shouldn't feel obligated to use this feature. However, we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
 
 ## Learn More
 
@@ -45,26 +47,114 @@ You can learn more in the [Create React App documentation](https://facebook.gith
 
 To learn React, check out the [React documentation](https://reactjs.org/).
 
-### Code Splitting
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## KITCHEN-SINK
 
-### Analyzing the Bundle Size
+### 1. Login and Registration Page
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+#### Registration
+Users can register by providing the following details:
+- **Email**
+- **Name**
+- **Contact Number**
+- **Password**
 
-### Making a Progressive Web App
+##### Buttons Available:
+- **Cancel**: Closes the registration form without saving.
+- **Submit**: Saves the information and submits it for approval.
+- **Close (X)**: Located at the top right corner of the modal, this button also closes the form.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+### Error Handling
+- If there are issues during registration, an error message will be displayed.
+- The error message will disappear once the user starts correcting the error.
+  
+### Success Message
+Upon successful registration, a message will indicate: 
+> "Registration successful. Pending for approval. Please check with administration."
 
-### Advanced Configuration
+### Login
+Users can log in using:
+- **Email**
+- **Password**
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+Upon successful login, the user is redirected to the home page.
 
-### Deployment
+## User Roles
+The application supports three user roles:
+1. **Admin**
+2. **User**
+3. **Visitor**
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+## Admin Dashboard
+When logged in as an Admin, the following options are available on the right sidebar:
+- **Home**
+- **Members**
+- **Users**
+- **Sign Out**
 
-### `npm run build` fails to minify
+### Members Section:
+- Displays a list of existing members.
+- Search functionality is available based on:
+  - Name
+  - Contact Number
+  - Email
+  - Optional filters
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+#### Member Details Options:
+- **Edit**
+- **Delete**
+- **Change Password**
+- **Approve (Accept/Decline)**
+
+> **Note:** Once approved, member details cannot be changed as they move to the user category.
+
+### Add New Member
+- A button at the bottom left allows for the addition of new members directly.
+
+### Sign Out
+- Redirects the user to the login page.
+
+## User Dashboard
+When logged in as a User, the sidebar contains the same options as the Admin:
+- **Home**
+- **Members**
+- **Users**
+- **Sign Out**
+
+### Members Section:
+- Displays existing members with search functionality (similar to Admin).
+
+#### Member Details Options:
+- **Edit**
+- **Delete**
+- **Change Password**
+- **Approve (Accept/Decline)**
+
+### Access Restriction
+All actions that change member details will trigger a pop-up indicating: 
+> "Access restricted. Only Admin can change."
+
+### Add New Member
+- A button at the bottom left allows for the addition of new members directly.
+
+### Sign Out
+- Redirects to the login page.
+
+## Visitor Dashboard
+When logged in as a Visitor, the sidebar has the same options:
+- **Home**
+- **Members**
+- **Users**
+- **Sign Out**
+
+### Members and Users Section:
+Access restrictions apply. All actions that change details will trigger a pop-up indicating:
+> "Access restricted. Only Admin can change."
+
+### Sign Out
+- Redirects to the login page.
+
+---
+
+**Note:** Once the registration note is approved, the member will be classified as a user and assigned a role based on the approval. Admins can change user roles at any time.

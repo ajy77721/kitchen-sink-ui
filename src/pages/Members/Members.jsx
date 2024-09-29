@@ -6,7 +6,7 @@ import 'react-phone-input-2/lib/style.css'; // Phone input styles
 import './Members.css'; // Local CSS import
 import DataTable from '../../components/Table/Table'; // Local component import
 import ApiClient from '../../service/apiclient/AxiosClient'; // Local service import
-import { clearSession } from '../../service/jwt/JwtService'; // Local JWT service import
+import { clearSession, isAdminRole, isUserRole, isVisitorRole } from '../../service/jwt/JwtService'; // Local JWT service import
 const { Option } = Select;
 
 const MemberDashboard = () => {
@@ -57,7 +57,13 @@ const MemberDashboard = () => {
   const [form] = Form.useForm();
 
   const showModal = () => {
-    setIsModalVisible(true);
+    if (isAdminRole()) {
+      setIsModalVisible(true);
+    } else if (!isUserRole()) {
+      showMessage.error('You do not have permission to access this functionality. Please contact the Administrator.');
+    } else {
+      setIsModalVisible(true);
+    }
   };
 
   const handleCancel = () => {
@@ -411,7 +417,7 @@ const MemberDashboard = () => {
 
 
   const [searchTerm, setSearchTerm] = useState();
-  const searchColumns = ['email', 'name', 'phoneNumber','status'];
+  const searchColumns = ['email', 'name', 'phoneNumber', 'status'];
   const handleSearch = (e) => {
     const value = e.target.value;
     console.log('Search:', value);
@@ -435,14 +441,14 @@ const MemberDashboard = () => {
         <Button type="primary" id="primary-btn" onClick={showModal}>
           Add New Member
         </Button>
-          {/* search Button  className="search-container"*/}
-          <Input
+        {/* search Button  className="search-container"*/}
+        <Input
           id="primary-btn"
           type="text"
           placeholder="Search"
           value={searchTerm}
           onChange={handleSearch}
-          style={{  marginLeft: '50%', width: '12%' ,  marginBottom: '10px'}}
+          style={{ marginLeft: '50%', width: '12%', marginBottom: '10px' }}
           allowClear
         />
         {isLoading ? (
@@ -485,7 +491,7 @@ const MemberDashboard = () => {
               label="Phone Number"
               name="phoneNumber"
             >
-                <PhoneInput
+              <PhoneInput
                 country={'in'}
                 onChange={(phone) => form.setFieldsValue({ phoneNumber: phone })} // Update form value
               />
@@ -499,7 +505,7 @@ const MemberDashboard = () => {
                 { min: 6, message: 'Password must be at least 6 characters long' }
               ]}
             >
-             <Input.Password />
+              <Input.Password />
             </Form.Item>
 
             <Form.Item
@@ -518,7 +524,7 @@ const MemberDashboard = () => {
                 })
               ]}
             >
-             <Input.Password />
+              <Input.Password />
             </Form.Item>
 
           </Form>

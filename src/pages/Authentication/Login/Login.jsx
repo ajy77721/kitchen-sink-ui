@@ -119,6 +119,7 @@ const Login = () => {
 
             if (response.data.status === true) {
               showMessage.success('Account created successfully!');
+              showMessage.success(response.data.data);
               form.resetFields();
               setIsModalVisible(false);
             }

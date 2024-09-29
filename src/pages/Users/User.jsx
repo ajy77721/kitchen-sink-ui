@@ -76,7 +76,11 @@ const UserDashboard = () => {
   };
   // Show the modal for adding new user
   const showModal = () => {
-    setIsModalVisible(true);
+    if(!isAdminRole()){
+     showMessage.error('You do not have permission to access this functionality. Please contact the Administrator.');
+    }else{
+      setIsModalVisible(true);
+    }
   };
 
   // Handle modal close action
@@ -454,9 +458,9 @@ const UserDashboard = () => {
         <h2>Dashboard</h2>
 
         {/* Add New User Button */}
-        {isAdminRole() ? <Button type="primary" id="primary-btn" onClick={showModal}>
+        { <Button type="primary" id="primary-btn" onClick={showModal}>
           Add New User
-        </Button> : <div />}
+        </Button> }
 
         {/* search Button  className="search-container"*/}
         <Input
@@ -465,7 +469,7 @@ const UserDashboard = () => {
           placeholder="Search"
           value={searchTerm}
           onChange={handleSearch}
-          style={{  marginLeft: '50%', width: '12%' ,  marginBottom: '10px'}}
+          style={{  marginLeft: '700px', width: '12%' ,  marginBottom: '10px'}}
           allowClear
         />
 

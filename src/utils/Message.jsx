@@ -11,7 +11,7 @@ msg.error = (message, duration = 4) => {
 };
 
 // Override the msg.success function
-msg.success = (message, duration = 1) => {
+msg.success = (message, duration = 2) => {
     return originalSuccess(message, duration); // Calls the original function with the default duration
 };
 
