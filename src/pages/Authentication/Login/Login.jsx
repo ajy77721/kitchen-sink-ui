@@ -22,7 +22,13 @@ const Login = () => {
       if (!userName.trim() || !password.trim()) {
         setError("Please enter your email and password.");
         return;
-    }
+      }
+      if(password.length < 6){
+        setError("Password must be at least 6 characters long.");
+        return;
+      }
+    
+
       const response = await ApiClient.post(`/auth/login`, {
         email: userName.trim(),
         password: password.trim()

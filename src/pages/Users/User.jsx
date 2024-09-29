@@ -478,7 +478,7 @@ const UserDashboard = () => {
           </div>
         ) : (
           <DataTable heading="List of all users" data={data} onEdit={handleEditAPI}
-            onDelete={handleDeleteAPI} restrictedItem={['status']}
+            onDelete={handleDeleteAPI} restrictedItem={['status','lastModifiedBy']}
             onBlock={handleBlock} onActive={handleActivate}
             onResetPasswordUser={handleResetPassword} />
         )}

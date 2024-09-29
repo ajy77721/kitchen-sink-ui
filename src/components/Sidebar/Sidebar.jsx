@@ -95,7 +95,7 @@ const Sidebar = () => {
     try {
       const res = await ApiClient.post("/user/change-password", changePassword);
       if (res.data.status === true) {
-        message.success(res.data.dat);
+        message.success(res.data.data);
         setIsModalVisible(false);
         form.resetFields();
       } else {
