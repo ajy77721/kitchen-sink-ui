@@ -4,7 +4,7 @@ import { Select, Input } from 'antd';
 import showMessage from '../../utils/Message'; // Custom message import
 import PhoneInput from 'react-phone-input-2'; // Phone input import
 import 'react-phone-input-2/lib/style.css'; // Phone input styles
-import { getEmail } from '../../service/jwt/JwtService'; // JWT service import
+import { getEmail, isAdminRole } from '../../service/jwt/JwtService'; // JWT service import
 import './Table.css'; // CSS file import
 
 const { Option } = Select;
@@ -65,6 +65,10 @@ const DataTable = ({
   const currentData = data.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
   const handleEdit = (row) => {
+    if(!isAdminRole()) {
+      showMessage.error('You do not have permission to access this functionality. Please contact the Administrator.');
+      return;
+    }
     if(row?.email === currentEmail) {
       showMessage.error('You cannot edit your own account');
       return;
@@ -79,6 +83,10 @@ const DataTable = ({
   };
 
   const handleDelete = (row) => {
+    if(!isAdminRole()) {
+      showMessage.error('You do not have permission to access this functionality. Please contact the Administrator.');
+      return;
+    }
     if(row?.email === currentEmail) {
       showMessage.error('You cannot edit your own account');
       return;
@@ -131,6 +139,10 @@ const DataTable = ({
   }
 
   const handleBlock =  (row) => {
+    if(!isAdminRole()) {
+      showMessage.error('You do not have permission to access this functionality. Please contact the Administrator.');
+      return;
+    }
     if(row?.email === currentEmail) {
       showMessage.error('You cannot edit your own account');
       return;
@@ -139,6 +151,10 @@ const DataTable = ({
     console.log('block')
   }
   const handleActivate =  (row) => {
+    if(!isAdminRole()) {
+      showMessage.error('You do not have permission to access this functionality. Please contact the Administrator.');
+      return;
+    }
     if(row?.email === currentEmail) {
       showMessage.error('You cannot edit your own account');
       return;
@@ -164,6 +180,10 @@ const DataTable = ({
     onStatusAction(row, 'DECLINE')
   }
   const handleReset = (row) => {
+    if(!isAdminRole()) {
+      showMessage.error('You do not have permission to access this functionality. Please contact the Administrator.');
+      return;
+    }
     if(row?.email === currentEmail) {
       showMessage.error('You cannot edit your own account');
       return;

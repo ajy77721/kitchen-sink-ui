@@ -76,9 +76,9 @@ const UserDashboard = () => {
   };
   // Show the modal for adding new user
   const showModal = () => {
-    if(!isAdminRole()){
-     showMessage.error('You do not have permission to access this functionality. Please contact the Administrator.');
-    }else{
+    if (!isAdminRole()) {
+      showMessage.error('You do not have permission to access this functionality. Please contact the Administrator.');
+    } else {
       setIsModalVisible(true);
     }
   };
@@ -90,46 +90,78 @@ const UserDashboard = () => {
   };
 
   const handleResetPassword = async (resetDto) => {
-    await ApiClient.post('/user/reset-password', resetDto)
-      .then((response) => {
-        if (response.data.status) {
-          showMessage.success('Password reset successfully');
-          fetchUserData();
-        } else {
-          showMessage.error('Failed to reset password');
-          showMessage.error(response.data.data.error);
-        }
-      })
-      .catch((error) => {
-        if (error.response) {
-          switch (error.response.status) {
-            case 401:
-              showMessage.error(`Unauthorized: Please logout and clean your user token.`);
-              clearSession();
-              break;
-            case 400:
-              showMessage.error(`Bad Request: ${error.response.data.error.message}`);
-              break;
-            case 404:
-              showMessage.error(`Not Found: The requested resource could not be found.`);
-              break;
-            case 500:
-              showMessage.error(`Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.`);
-              break;
-            case 412: // Precondition Failed
-              showMessage.error(`Precondition Failed: ${error.response.data.error.message}`);
-              break;
-            default:
-              showMessage.error('Failed to reset password. Please try again.');
-              showMessage.error(error.response.data.error.message);
-              break;
+    try {
+      await ApiClient.post('/user/reset-password', resetDto)
+        .then((response) => {
+          if (response.data.status) {
+            showMessage.success('Password reset successfully');
+            fetchUserData();
+          } else {
+            showMessage.error('Failed to reset password');
+            showMessage.error(response.data.data.error);
           }
-        } else {
-          showMessage.error('Failed to reset password. Please try again.');
-          showMessage.error(error.message);
-        }
+        })
+        .catch((error) => {
+          if (error.response) {
+            switch (error.response.status) {
+              case 401:
+                showMessage.error(`Unauthorized: Please logout and clean your user token.`);
+                clearSession();
+                break;
+              case 400:
+                showMessage.error(`Bad Request: ${error.response.data.error.message}`);
+                break;
+              case 404:
+                showMessage.error(`Not Found: The requested resource could not be found.`);
+                break;
+              case 500:
+                showMessage.error(`Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.`);
+                break;
+              case 412: // Precondition Failed
+                showMessage.error(`Precondition Failed: ${error.response.data.error.message}`);
+                break;
+              default:
+                showMessage.error('Failed to reset password. Please try again.');
+                showMessage.error(error.response.data.error.message);
+                break;
+            }
+          } else {
+            showMessage.error('Failed to reset password. Please try again.');
+            showMessage.error(error.message);
+          }
 
-      });
+        });
+    } catch (error) {
+      if (error.response) {
+        switch (error.response.status) {
+          case 401:
+            showMessage.error(`Unauthorized: Please logout and clean your user token.`);
+            clearSession();
+            break;
+          case 400:
+            showMessage.error(`Bad Request: ${error.response.data.error.message}`);
+            break;
+          case 404:
+            showMessage.error(`Not Found: The requested resource could not be found.`);
+            break;
+          case 500:
+            showMessage.error(`Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.`);
+            break;
+          case 412: // Precondition Failed
+            showMessage.error(`Precondition Failed: ${error.response.data.error.message}`);
+            break;
+          default:
+            showMessage.error('Failed to reset password. Please try again.');
+            showMessage.error(error.response.data.error.message);
+            break;
+        }
+      } else if (error.request) {
+        showMessage.error('Failed to reset password. Please try again.');
+        showMessage.error(error.message);
+      } else {
+        showMessage.error('Failed to reset password. Please try again.');
+      }
+    }
     fetchUserData();
     form.resetFields();
   }
@@ -178,7 +210,36 @@ const UserDashboard = () => {
         });
 
     } catch (error) {
-      showMessage.error(`Failed to active user  ${row.email}. Please try again.`);
+      if (error?.response) {
+        switch (error.response.status) {
+          case 401:
+            showMessage.error(`Unauthorized: Please logout and clean your user token.`);
+            clearSession();
+            break;
+          case 400:
+            showMessage.error(`Bad Request: ${error.response.data.error.message}`);
+            break;
+          case 500:
+            showMessage.error(`Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.`);
+            break;
+          case 404:
+            showMessage.error(`Not Found: ${error.response.data.error.message}.`);
+            break;
+          case 412:
+            showMessage.error(`Precondition Failed: ${error.response.data.error.message}`);
+            break;
+          default:
+            showMessage.error(`Failed to activate user ${row.email}. Please try again.`);
+            showMessage.error(error.response.data.error.message);
+            break;
+        }
+      } else if (error.request) {
+        showMessage.error(`Failed to activate user ${row.email}. Please try again.`);
+        showMessage.error(error.message);
+      } else {
+
+        showMessage.error(`Failed to active user  ${row.email}. Please try again.`);
+      }
     }
     console.log('active')
   }
@@ -227,7 +288,34 @@ const UserDashboard = () => {
         });
 
     } catch (error) {
-      showMessage.error(`Failed to blocked user  ${row.email}. Please try again.`);
+      if (error?.response) {
+        switch (error.response.status) {
+          case 401:
+            showMessage.error(`Unauthorized: Please logout and clean your user token.`);
+            clearSession();
+            break;
+          case 400:
+            showMessage.error(`Bad Request: ${error.response.data.error.message}`);
+            break;
+          case 404:
+            showMessage.error(`Not Found: The user could not be found.`);
+            break;
+          case 500:
+            showMessage.error(`Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.`);
+            break;
+          case 412: // Precondition Failed
+            showMessage.error(`Precondition Failed: ${error.response.data.error.message}`);
+            break;
+          default:
+            showMessage.error(`Failed to block user ${row.email}. Please try again.`);
+            showMessage.error(error.response.data.error.message);
+            break;
+        }
+      } else if(error.request){
+        showMessage.error(`Failed to block user ${row.email}. Please try again.`);
+        showMessage.error(error.message);
+      }else{
+      showMessage.error(`Failed to blocked user  ${row.email}. Please try again.`);}
     }
   }
 
@@ -347,6 +435,7 @@ const UserDashboard = () => {
       phoneNumber: editData.phoneNumber,
       roles: parseRoles(editData.roles),
     }
+    try{
 
     await ApiClient.put('/user', reqData)
       .then((response) => {
@@ -385,14 +474,42 @@ const UserDashboard = () => {
           console.error('Failed to update user:', error);
           showMessage.error('Failed to update user. Please try again.');
         }
-      });
+      });}catch(error){
+        if (error.response) {
+          switch (error.response.status) {
+            case 401:
+              showMessage.error(`Unauthorized: Please logout and clean your user token.`);
+              clearSession();
+              break;
+            case 400:
+              showMessage.error(`Bad Request: ${error.response.data.error.message}`);
+              break;
+            case 404:
+              showMessage.error(`Not Found: The specified user could not be found.`);
+              break;
+            case 500:
+              showMessage.error(`Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.`);
+              break;
+            case 412: // Precondition Failed
+              showMessage.error(`Precondition Failed: ${error.response.data.error.message}`);
+              break;
+            default:
+              showMessage.error('Failed to update user. Please try again.');
+              showMessage.error(error.response.data.error.message);
+              break;
+          }
+        } else {
+          console.error('Failed to update user:', error);
+          showMessage.error('Failed to update user. Please try again.');
+        }
+      }
     fetchUserData();
 
   }
 
 
   const handleDeleteAPI = async (row) => {
-
+try{
     await ApiClient.delete('/user/' + row.id)
       .then((response) => {
         if (response.data.status) {
@@ -428,7 +545,32 @@ const UserDashboard = () => {
           showMessage.error('Failed to delete user. Please try again.');
         }
 
-      });
+      });}catch(error){
+        if (error.response) {
+          switch (error.response.status) {
+            case 401:
+              showMessage.error(`Unauthorized: Please logout and clean your user token.`);
+              clearSession();
+              break;
+            case 400:
+              showMessage.error(`Bad Request: ${error.response.data.error.message}`);
+              break;
+            case 404:
+              showMessage.error(`Not Found: The specified user could not be found.`);
+              break;
+            case 500:
+              showMessage.error(`Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.`);
+              break;
+            default:
+              showMessage.error('Failed to delete user. Please try again.');
+              showMessage.error(error.response.data.error.message);
+              break;
+          }
+        } else {
+          console.error('Failed to delete user:', error);
+          showMessage.error('Failed to delete user. Please try again.');
+        }
+      }
     fetchUserData();
 
   }
@@ -458,9 +600,9 @@ const UserDashboard = () => {
         <h2>Dashboard</h2>
 
         {/* Add New User Button */}
-        { <Button type="primary" id="primary-btn" onClick={showModal}>
+        {<Button type="primary" id="primary-btn" onClick={showModal}>
           Add New User
-        </Button> }
+        </Button>}
 
         {/* search Button  className="search-container"*/}
         <Input
@@ -469,7 +611,7 @@ const UserDashboard = () => {
           placeholder="Search"
           value={searchTerm}
           onChange={handleSearch}
-          style={{  marginLeft: '700px', width: '12%' ,  marginBottom: '10px'}}
+          style={{ marginLeft: '700px', width: '12%', marginBottom: '10px' }}
           allowClear
         />
 
@@ -482,7 +624,7 @@ const UserDashboard = () => {
           </div>
         ) : (
           <DataTable heading="List of all users" data={data} onEdit={handleEditAPI}
-            onDelete={handleDeleteAPI} restrictedItem={['status','lastModifiedBy']}
+            onDelete={handleDeleteAPI} restrictedItem={['status', 'lastModifiedBy']}
             onBlock={handleBlock} onActive={handleActivate}
             onResetPasswordUser={handleResetPassword} />
         )}

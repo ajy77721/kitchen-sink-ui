@@ -123,8 +123,40 @@ const MemberDashboard = () => {
           }
         });
     } catch (error) {
-      console.error('Error resetting password:', error);
-      showMessage.error('Failed to reset password');
+      if (error?.response) {
+        switch (error.response.status) {
+          case 401:
+            showMessage.error('Unauthorized: Please logout and clean your user token.');
+            clearSession();
+            break;
+          case 400:
+            showMessage.error('Bad Request: ' + error.response.data.error.message);
+            break;
+          case 404:
+            showMessage.error('Not Found: Could not find the resource.');
+            break;
+          case 412:
+            showMessage.error('Precondition Failed: ' + error.response.data.error.message);
+            break;
+          case 500:
+            showMessage.error('Internal Server Error: Please refresh the page, log out, and log back in. If the issue persists, contact admin.');
+            break;
+          case 409:
+            showMessage.error('Conflict: Failed to reset password');
+            showMessage.error(error.response.data.error.message, 3);
+            fetchUserData();
+            break;
+          default:
+            showMessage.error('Failed to reset password: ' + error.response.data.error.message);
+            break;
+        }
+      } else if (error?.message) {
+        showMessage.error('Failed to reset password');
+        showMessage.error(error.message);
+      } else {
+        console.error('Error resetting password:', error);
+        showMessage.error('Failed to reset password');
+      }
     }
     form.resetFields();
   }
@@ -179,8 +211,39 @@ const MemberDashboard = () => {
         });
       fetchUserData();
     } catch (error) {
-      console.error('Error adding new member:', error);
-      showMessage.error('Failed to add new member');
+      if (error?.response) {
+        switch (error.response.status) {
+          case 204:
+            showMessage.error('No Content: ' + error.response.data.error.message);
+            fetchUserData();
+            break;
+          case 401:
+            showMessage.error('Unauthorized: Please logout and clean your user token.');
+            clearSession();
+            break;
+          case 400:
+            showMessage.error('Bad Request: ' + error.response.data.error.message);
+            break;
+          case 404:
+            showMessage.error('Not Found: Could not find the resource.');
+            break;
+          case 412:
+            showMessage.error('Precondition Failed: ' + error.response.data.error.message);
+            break;
+          case 500:
+            showMessage.error('Internal Server Error: Please refresh the page, log out, and log back in. If the issue persists, contact admin.');
+            break;
+          default:
+            showMessage.error('Failed to add member: ' + error.response.data.error.message);
+            break;
+        }
+      } else if (error?.message) {
+        showMessage.error('Failed to add member');
+        showMessage.error(error.message);
+      } else {
+        console.error('Error adding new member:', error);
+        showMessage.error('Failed to add new member');
+      }
     }
   }
 
@@ -351,8 +414,39 @@ const MemberDashboard = () => {
         });
 
     } catch (error) {
-      console.error('Error approving member:', error);
-      showMessage.error('Failed to approve member')
+      if (error?.response) {
+        switch (error.response.status) {
+          case 204:
+            showMessage.error('No Content: ' + error.response.data.error.message);
+            fetchUserData();
+            break;
+          case 401:
+            showMessage.error('Unauthorized: Please logout and clean your user token.');
+            clearSession()
+            break;
+          case 400:
+            showMessage.error('Bad Request: ' + error.response.data.error.message);
+            break;
+          case 404:
+            showMessage.error('Not Found: Could not find the resource.');
+            break;
+          case 412:
+            showMessage.error('Precondition Failed: ' + error.response.data.error.message);
+            break;
+          case 500:
+            showMessage.error('Internal Server Error: Please refresh the page, log out, and log back in. If the issue persists, contact admin.');
+            break;
+          default:
+            showMessage.error('Failed to approve member: ' + error.response.data.error.message);
+            break;
+        }
+      } else if (error?.message) {
+        showMessage.error('Failed to approve member');
+        showMessage.error(error.message);
+      } else {
+        console.error('Error approving member:', error);
+        showMessage.error('Failed to approve member')
+      }
     }
   }
   const handleDecline = async (row) => {
@@ -402,8 +496,39 @@ const MemberDashboard = () => {
         });
 
     } catch (error) {
-      console.error('Error declining member:', error);
-      showMessage.error('Failed to decline member')
+      if (error?.response) {
+        switch (error.response.status) {
+          case 204:
+            showMessage.error('No Content: ' + error.response.data.error.message);
+            fetchUserData();
+            break;
+          case 401:
+            showMessage.error('Unauthorized: Please logout and clean your user token.');
+            clearSession()
+            break;
+          case 400:
+            showMessage.error('Bad Request: ' + error.response.data.error.message);
+            break;
+          case 404:
+            showMessage.error('Not Found: Could not find the resource.');
+            break;
+          case 412:
+            showMessage.error('Precondition Failed: ' + error.response.data.error.message);
+            break;
+          case 500:
+            showMessage.error('Internal Server Error: Please refresh the page, log out, and log back in. If the issue persists, contact admin.');
+            break;
+          default:
+            showMessage.error('Failed to decline member: ' + error.response.data.error.message);
+            break;
+        }
+      } else if (error?.message) {
+        showMessage.error('Failed to decline member');
+        showMessage.error(error.message);
+      } else {
+        console.error('Error declining member:', error);
+        showMessage.error('Failed to decline member')
+      }
     }
   }
 

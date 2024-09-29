@@ -112,7 +112,7 @@ const Login = () => {
           phoneNumber: values.phoneNumber?.trim(),
           password: values.password?.trim()
         });
-
+       try{
         await ApiClient.post('/member/register', data)
           .then((response) => {
             console.log('Response:', JSON.stringify(response.data));
@@ -156,7 +156,35 @@ const Login = () => {
               showMessage.error('Failed to create account. Please try again.');
               showMessage.error(error.message);
             }
-          });
+          });}catch(error){
+            if (error?.response) {
+              switch (error.response.status) {
+                case 401:
+                  showMessage.error(`Unauthorized: Please logout and clean your user token.`);
+                  clearSession();
+                  break;
+                case 400:
+                  showMessage.error(`Bad Request: ${error.response.data.error.message}`);
+                  break;
+                case 500:
+                  showMessage.error(`Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.`);
+                  break;
+                case 404:
+                  showMessage.error(`Not Found: The requested resource could not be found.`);
+                  break;
+                case 412:
+                  showMessage.error(`Precondition Failed: ${error.response.data.error.message}`);
+                  break;
+                default:
+                  showMessage.error('Failed to create account. Please try again.');
+                  showMessage.error(error.response.data.error.message);
+                  break;
+              }
+            } else {
+              showMessage.error('Failed to create account. Please try again.');
+              showMessage.error(error.message);
+            }
+          }
       })
       .catch(info => {
         console.log('Validation Failed:', info);
