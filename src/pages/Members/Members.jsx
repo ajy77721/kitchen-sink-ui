@@ -11,8 +11,9 @@ const { Option } = Select;
 
 const MemberDashboard = () => {
   const [data, setData] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [dataWithoutSearch, setDataWithoutSearch] = useState([]);
 
+  const [isLoading, setIsLoading] = useState(false);
 
 
   const fetchUserData = async () => {
@@ -20,6 +21,7 @@ const MemberDashboard = () => {
     try {
       const response = await ApiClient.get(`/member`);
       setData(response.data.data);
+      setDataWithoutSearch(response.data.data);
       setIsLoading(false);
     } catch (error) {
       if (error.response) {
@@ -408,6 +410,22 @@ const MemberDashboard = () => {
   }
 
 
+  const [searchTerm, setSearchTerm] = useState();
+  const searchColumns = ['email', 'name', 'phoneNumber','status'];
+  const handleSearch = (e) => {
+    const value = e.target.value;
+    console.log('Search:', value);
+    setSearchTerm(value);
+
+    const filteredData = dataWithoutSearch.filter(item =>
+      searchColumns.some(key =>
+        item[key]?.toString().toLowerCase().includes(value.toLowerCase())
+      )
+    );
+
+    setData(filteredData);
+  };
+
 
   return (
     <>
@@ -417,6 +435,16 @@ const MemberDashboard = () => {
         <Button type="primary" id="primary-btn" onClick={showModal}>
           Add New Member
         </Button>
+          {/* search Button  className="search-container"*/}
+          <Input
+          id="primary-btn"
+          type="text"
+          placeholder="Search"
+          value={searchTerm}
+          onChange={handleSearch}
+          style={{  marginLeft: '50%', width: '12%' ,  marginBottom: '10px'}}
+          allowClear
+        />
         {isLoading ? (
           <p>Loading users...</p>
         ) : (

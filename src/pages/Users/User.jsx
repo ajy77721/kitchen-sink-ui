@@ -11,8 +11,10 @@ const { Option } = Select;
 //
 
 const UserDashboard = () => {
- 
+
   const [data, setData] = useState([]);
+  const [dataWithoutSearch, setDataWithoutSearch] = useState([]);
+
   //  const [isLoading, setIsLoading] = useState(false);  // Add loading state
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
@@ -35,6 +37,7 @@ const UserDashboard = () => {
       if (response.status === 200 && response.data) {
         const users = response.data.data || []
         setData(users);
+        setDataWithoutSearch(users);
         // Ensure data is an array
       } else {
         console.error('Unexpected API response:', response);
@@ -426,6 +429,25 @@ const UserDashboard = () => {
 
   }
 
+
+  const [searchTerm, setSearchTerm] = useState();
+  const searchColumns = ['email', 'name', 'phoneNumber', 'status', 'roles'];
+  const handleSearch = (e) => {
+    const value = e.target.value;
+    console.log('Search:', value);
+    setSearchTerm(value);
+
+    const filteredData = dataWithoutSearch.filter(item =>
+      searchColumns.some(key =>
+        item[key]?.toString().toLowerCase().includes(value.toLowerCase())
+      )
+    );
+
+    setData(filteredData);
+  };
+
+
+
   return (
     <>
       <main className="main-content">
@@ -435,6 +457,17 @@ const UserDashboard = () => {
         {isAdminRole() ? <Button type="primary" id="primary-btn" onClick={showModal}>
           Add New User
         </Button> : <div />}
+
+        {/* search Button  className="search-container"*/}
+        <Input
+          id="primary-btn"
+          type="text"
+          placeholder="Search"
+          value={searchTerm}
+          onChange={handleSearch}
+          style={{  marginLeft: '50%', width: '12%' ,  marginBottom: '10px'}}
+          allowClear
+        />
 
         {/* Display loading message when fetching data */}
         {isVisitorRole() ? (
@@ -561,7 +594,7 @@ const UserDashboard = () => {
 
           </Form>
         </Modal>
-      </main>
+      </main >
     </>
   );
 };
