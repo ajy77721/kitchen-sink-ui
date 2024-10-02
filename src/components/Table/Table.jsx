@@ -14,7 +14,7 @@ const DataTable = ({
   heading, data, loading, onEdit, onDelete, mongoId,
   restrictedItem = [], memberBtn,
   onBlock, onActive, onResetPasswordUser, onResetPasswordMemeber,
-  onStatusAction
+  onStatusAction,
 }) => {
   const [headers, setHeaders] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -106,21 +106,17 @@ const DataTable = ({
   };
 
   const confirmSaveChanges = () => {
-    onEdit(editData, editOldData);
+    onEdit(editData, editOldData,setShowEditModal);
     setShowSaveConfirm(false);
-    setShowEditModal(false);
   };
 
   const confirmResetPassword = async () => {
     if (memberBtn) {
-      await onResetPasswordMemeber({ id: resetPasswordDataID, password });
+      await onResetPasswordMemeber({ id: resetPasswordDataID, password },setShowResetPWDModel,setPassword,setConfirmPassword);
     } else {
-       await onResetPasswordUser({ id: resetPasswordDataID, password });
+       await onResetPasswordUser({ id: resetPasswordDataID, password },setShowResetPWDModel,setPassword,setConfirmPassword);
     }
     setShowResetPWDConfirm(false);
-    setShowResetPWDModel(false);
-    setPassword('');
-    setConfirmPassword('');
   }
 
   const handleResetCancel = () => {

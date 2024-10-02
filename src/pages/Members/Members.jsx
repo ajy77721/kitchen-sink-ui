@@ -71,12 +71,15 @@ const MemberDashboard = () => {
     form.resetFields();
   };
 
-  const handleResetPassword = async (resetDto) => {
+  const handleResetPassword = async (resetDto,setShowResetPWDModel,setPassword,setConfirmPassword) => {
     try {
       await ApiClient.post('/member/reset-password', resetDto)
         .then((response) => {
           if (response.data.status) {
             showMessage.success('Password reset successfully');
+            setShowResetPWDModel(false);
+            setPassword('');
+            setConfirmPassword('');
             fetchUserData();
             //   setIsResetModalVisible(false);
           } else if (response.status === 409) {
@@ -171,7 +174,11 @@ const MemberDashboard = () => {
       })
         .then((response) => {
           if (response.data.status) {
+            setIsModalVisible(false);
+            form.resetFields();
             showMessage.success('Member added successfully');
+            fetchUserData();
+
           } else {
             showMessage.error('Failed to add member');
             showMessage.error(response.data.data.error);
@@ -209,7 +216,7 @@ const MemberDashboard = () => {
             showMessage.error(error.message);
           }
         });
-      fetchUserData();
+
     } catch (error) {
       if (error?.response) {
         switch (error.response.status) {
@@ -249,24 +256,19 @@ const MemberDashboard = () => {
 
   const onAddNewMemberSubmit = async () => {
     try {
-      form
-        .validateFields() // Validate fields on submit
-        .then(values => {
-          addNewMemberApi(values);
-          form.resetFields(); // Reset form fields after successful submission
-          setIsModalVisible(false); // Close modal after form submission
-        }).catch(info => {
-          console.log('Validation Failed:', info);
-          showMessage.error('Please enter all the required fields');
-        })
+      const values = await form.validateFields() // Validate fields on submit
+      await addNewMemberApi(values);
+  
     } catch (error) {
+      console.log('Validation Failed:', error);
+      showMessage.error('Please enter all the required fields');
       console.log('Error:', error);
       showMessage.error('Failed to add new member');
     }
 
   }
 
-  const onEdit = async (values) => {
+  const onEdit = async (values,oldRow, setShowEditModal) => {
     try {
       await ApiClient.put('/member', {
         id: values.id,
@@ -277,6 +279,7 @@ const MemberDashboard = () => {
         .then((response) => {
           if (response.data.status) {
             showMessage.success('Member update successfully');
+            setShowEditModal(false);
             fetchUserData();
           } else {
             showMessage.error('Failed to update member');
