@@ -89,12 +89,15 @@ const UserDashboard = () => {
     form.resetFields();
   };
 
-  const handleResetPassword = async (resetDto) => {
+  const handleResetPassword = async (resetDto,setShowResetPWDModel,setPassword,setConfirmPassword) => {
     try {
       await ApiClient.post('/user/reset-password', resetDto)
         .then((response) => {
           if (response.data.status) {
             showMessage.success('Password reset successfully');
+            setShowResetPWDModel(false);
+            setPassword('');
+            setConfirmPassword('');
             fetchUserData();
           } else {
             showMessage.error('Failed to reset password');
@@ -162,8 +165,6 @@ const UserDashboard = () => {
         showMessage.error('Failed to reset password. Please try again.');
       }
     }
-    fetchUserData();
-    form.resetFields();
   }
   const handleBlock = async (row) => {
 
@@ -311,11 +312,12 @@ const UserDashboard = () => {
             showMessage.error(error.response.data.error.message);
             break;
         }
-      } else if(error.request){
+      } else if (error.request) {
         showMessage.error(`Failed to block user ${row.email}. Please try again.`);
         showMessage.error(error.message);
-      }else{
-      showMessage.error(`Failed to blocked user  ${row.email}. Please try again.`);}
+      } else {
+        showMessage.error(`Failed to blocked user  ${row.email}. Please try again.`);
+      }
     }
   }
 
@@ -418,7 +420,7 @@ const UserDashboard = () => {
 
     return validRoles;
   };
-  const handleEditAPI = async (editData, editOldData) => {
+  const handleEditAPI = async (editData, editOldData,setShowEditModal) => {
     if (!editData) {
       showMessage.error('No data to save,Plese close the modal and try again');
       return;
@@ -435,142 +437,144 @@ const UserDashboard = () => {
       phoneNumber: editData.phoneNumber,
       roles: parseRoles(editData.roles),
     }
-    try{
+    try {
 
-    await ApiClient.put('/user', reqData)
-      .then((response) => {
-        if (response.data.status) {
-          showMessage.success('User updated successfully');
-        } else {
-          showMessage.error('Failed to update user');
-          showMessage.error(response.data.data.error);
-        }
-      })
-      .catch((error) => {
-        if (error.response) {
-          switch (error.response.status) {
-            case 401:
-              showMessage.error(`Unauthorized: Please logout and clean your user token.`);
-              clearSession();
-              break;
-            case 400:
-              showMessage.error(`Bad Request: ${error.response.data.error.message}`);
-              break;
-            case 404:
-              showMessage.error(`Not Found: The specified user could not be found.`);
-              break;
-            case 500:
-              showMessage.error(`Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.`);
-              break;
-            case 412: // Precondition Failed
-              showMessage.error(`Precondition Failed: ${error.response.data.error.message}`);
-              break;
-            default:
-              showMessage.error('Failed to update user. Please try again.');
-              showMessage.error(error.response.data.error.message);
-              break;
+      await ApiClient.put('/user', reqData)
+        .then((response) => {
+          if (response.data.status) {
+            showMessage.success('User updated successfully');
+            setShowEditModal(false);
+            fetchUserData();
+          } else {
+            showMessage.error('Failed to update user');
+            showMessage.error(response.data.data.error);
           }
-        } else {
-          console.error('Failed to update user:', error);
-          showMessage.error('Failed to update user. Please try again.');
-        }
-      });}catch(error){
-        if (error.response) {
-          switch (error.response.status) {
-            case 401:
-              showMessage.error(`Unauthorized: Please logout and clean your user token.`);
-              clearSession();
-              break;
-            case 400:
-              showMessage.error(`Bad Request: ${error.response.data.error.message}`);
-              break;
-            case 404:
-              showMessage.error(`Not Found: The specified user could not be found.`);
-              break;
-            case 500:
-              showMessage.error(`Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.`);
-              break;
-            case 412: // Precondition Failed
-              showMessage.error(`Precondition Failed: ${error.response.data.error.message}`);
-              break;
-            default:
-              showMessage.error('Failed to update user. Please try again.');
-              showMessage.error(error.response.data.error.message);
-              break;
+        })
+        .catch((error) => {
+          if (error.response) {
+            switch (error.response.status) {
+              case 401:
+                showMessage.error(`Unauthorized: Please logout and clean your user token.`);
+                clearSession();
+                break;
+              case 400:
+                showMessage.error(`Bad Request: ${error.response.data.error.message}`);
+                break;
+              case 404:
+                showMessage.error(`Not Found: The specified user could not be found.`);
+                break;
+              case 500:
+                showMessage.error(`Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.`);
+                break;
+              case 412: // Precondition Failed
+                showMessage.error(`Precondition Failed: ${error.response.data.error.message}`);
+                break;
+              default:
+                showMessage.error('Failed to update user. Please try again.');
+                showMessage.error(error.response.data.error.message);
+                break;
+            }
+          } else {
+            console.error('Failed to update user:', error);
+            showMessage.error('Failed to update user. Please try again.');
           }
-        } else {
-          console.error('Failed to update user:', error);
-          showMessage.error('Failed to update user. Please try again.');
+        });
+    } catch (error) {
+      if (error.response) {
+        switch (error.response.status) {
+          case 401:
+            showMessage.error(`Unauthorized: Please logout and clean your user token.`);
+            clearSession();
+            break;
+          case 400:
+            showMessage.error(`Bad Request: ${error.response.data.error.message}`);
+            break;
+          case 404:
+            showMessage.error(`Not Found: The specified user could not be found.`);
+            break;
+          case 500:
+            showMessage.error(`Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.`);
+            break;
+          case 412: // Precondition Failed
+            showMessage.error(`Precondition Failed: ${error.response.data.error.message}`);
+            break;
+          default:
+            showMessage.error('Failed to update user. Please try again.');
+            showMessage.error(error.response.data.error.message);
+            break;
         }
+      } else {
+        console.error('Failed to update user:', error);
+        showMessage.error('Failed to update user. Please try again.');
       }
-    fetchUserData();
-
+    }
   }
 
 
   const handleDeleteAPI = async (row) => {
-try{
-    await ApiClient.delete('/user/' + row.id)
-      .then((response) => {
-        if (response.data.status) {
-          showMessage.success('User delete successfully');
-        } else {
-          showMessage.error('Failed to delete user');
-          showMessage.error(response.data.data.error);
-        }
-      })
-      .catch((error) => {
-        if (error.response) {
-          switch (error.response.status) {
-            case 401:
-              showMessage.error(`Unauthorized: Please logout and clean your user token.`);
-              clearSession();
-              break;
-            case 400:
-              showMessage.error(`Bad Request: ${error.response.data.error.message}`);
-              break;
-            case 404:
-              showMessage.error(`Not Found: The specified user could not be found.`);
-              break;
-            case 500:
-              showMessage.error(`Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.`);
-              break;
-            default:
-              showMessage.error('Failed to delete user. Please try again.');
-              showMessage.error(error.response.data.error.message);
-              break;
+    try {
+      await ApiClient.delete('/user/' + row.id)
+        .then((response) => {
+          if (response.data.status) {
+            showMessage.success('User delete successfully');
+          } else {
+            showMessage.error('Failed to delete user');
+            showMessage.error(response.data.data.error);
           }
-        } else {
-          console.error('Failed to delete user:', error);
-          showMessage.error('Failed to delete user. Please try again.');
-        }
+        })
+        .catch((error) => {
+          if (error.response) {
+            switch (error.response.status) {
+              case 401:
+                showMessage.error(`Unauthorized: Please logout and clean your user token.`);
+                clearSession();
+                break;
+              case 400:
+                showMessage.error(`Bad Request: ${error.response.data.error.message}`);
+                break;
+              case 404:
+                showMessage.error(`Not Found: The specified user could not be found.`);
+                break;
+              case 500:
+                showMessage.error(`Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.`);
+                break;
+              default:
+                showMessage.error('Failed to delete user. Please try again.');
+                showMessage.error(error.response.data.error.message);
+                break;
+            }
+          } else {
+            console.error('Failed to delete user:', error);
+            showMessage.error('Failed to delete user. Please try again.');
+          }
 
-      });}catch(error){
-        if (error.response) {
-          switch (error.response.status) {
-            case 401:
-              showMessage.error(`Unauthorized: Please logout and clean your user token.`);
-              clearSession();
-              break;
-            case 400:
-              showMessage.error(`Bad Request: ${error.response.data.error.message}`);
-              break;
-            case 404:
-              showMessage.error(`Not Found: The specified user could not be found.`);
-              break;
-            case 500:
-              showMessage.error(`Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.`);
-              break;
-            default:
-              showMessage.error('Failed to delete user. Please try again.');
-              showMessage.error(error.response.data.error.message);
-              break;
-          }
-        } else {
-          console.error('Failed to delete user:', error);
-          showMessage.error('Failed to delete user. Please try again.');
+        });
+    } catch (error) {
+      if (error.response) {
+        switch (error.response.status) {
+          case 401:
+            showMessage.error(`Unauthorized: Please logout and clean your user token.`);
+            clearSession();
+            break;
+          case 400:
+            showMessage.error(`Bad Request: ${error.response.data.error.message}`);
+            break;
+          case 404:
+            showMessage.error(`Not Found: The specified user could not be found.`);
+            break;
+          case 500:
+            showMessage.error(`Internal Server Error: If the issue persists, please refresh the page and try logging in again or contact admin.`);
+            break;
+          default:
+            showMessage.error('Failed to delete user. Please try again.');
+            showMessage.error(error.response.data.error.message);
+            break;
         }
+      } else {
+        console.error('Failed to delete user:', error);
+        showMessage.error('Failed to delete user. Please try again.');
       }
+    }
     fetchUserData();
 
   }
