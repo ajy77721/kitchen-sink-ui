@@ -42,7 +42,7 @@ const Login = () => {
         switch (error.response.status) {
           case 401:
             setError(`Unauthorized: Please logout and clean your user token.`);
-            clearSession();
+             clearSession(error?.response?.data?.error?.message);
             break;
           case 400:
             setError(`Bad Request: ${error.response.data.error.message}`);
@@ -133,7 +133,7 @@ const Login = () => {
               switch (error.response.status) {
                 case 401:
                   showMessage.error(`Unauthorized: Please logout and clean your user token.`);
-                  clearSession();
+                   clearSession(error?.response?.data?.error?.message);
                   break;
                 case 400:
                   showMessage.error(`Bad Request: ${error.response.data.error.message}`);
@@ -161,7 +161,7 @@ const Login = () => {
               switch (error.response.status) {
                 case 401:
                   showMessage.error(`Unauthorized: Please logout and clean your user token.`);
-                  clearSession();
+                   clearSession(error?.response?.data?.error?.message);
                   break;
                 case 400:
                   showMessage.error(`Bad Request: ${error.response.data.error.message}`);

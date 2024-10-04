@@ -48,7 +48,7 @@ const UserDashboard = () => {
         switch (error.response.status) {
           case 401:
             showMessage.error('Unauthorized: Please logout and clean your user token.');
-            clearSession();
+            clearSession(error?.response?.data?.error?.message);
             break;
           case 403:
             //  setIsLoading(true);
@@ -109,7 +109,7 @@ const UserDashboard = () => {
             switch (error.response.status) {
               case 401:
                 showMessage.error(`Unauthorized: Please logout and clean your user token.`);
-                clearSession();
+                clearSession(error?.response?.data?.error?.message);
                 break;
               case 400:
                 showMessage.error(`Bad Request: ${error.response.data.error.message}`);
@@ -139,7 +139,7 @@ const UserDashboard = () => {
         switch (error.response.status) {
           case 401:
             showMessage.error(`Unauthorized: Please logout and clean your user token.`);
-            clearSession();
+            clearSession(error?.response?.data?.error?.message);
             break;
           case 400:
             showMessage.error(`Bad Request: ${error.response.data.error.message}`);
@@ -184,7 +184,7 @@ const UserDashboard = () => {
             switch (error.response.status) {
               case 401:
                 showMessage.error(`Unauthorized: Please logout and clean your user token.`);
-                clearSession();
+                clearSession(error?.response?.data?.error?.message);
                 break;
               case 400:
                 showMessage.error(`Bad Request: ${error.response.data.error.message}`);
@@ -215,7 +215,7 @@ const UserDashboard = () => {
         switch (error.response.status) {
           case 401:
             showMessage.error(`Unauthorized: Please logout and clean your user token.`);
-            clearSession();
+            clearSession(error?.response?.data?.error?.message);
             break;
           case 400:
             showMessage.error(`Bad Request: ${error.response.data.error.message}`);
@@ -262,7 +262,7 @@ const UserDashboard = () => {
             switch (error.response.status) {
               case 401:
                 showMessage.error(`Unauthorized: Please logout and clean your user token.`);
-                clearSession();
+                clearSession(error?.response?.data?.error?.message);
                 break;
               case 400:
                 showMessage.error(`Bad Request: ${error.response.data.error.message}`);
@@ -293,7 +293,7 @@ const UserDashboard = () => {
         switch (error.response.status) {
           case 401:
             showMessage.error(`Unauthorized: Please logout and clean your user token.`);
-            clearSession();
+            clearSession(error?.response?.data?.error?.message);
             break;
           case 400:
             showMessage.error(`Bad Request: ${error.response.data.error.message}`);
@@ -354,7 +354,7 @@ const UserDashboard = () => {
             switch (error.response.status) {
               case 401:
                 showMessage.error(`Unauthorized: Please logout and clean your user token.`);
-                clearSession();
+                clearSession(error?.response?.data?.error?.message);
                 break;
               case 400:
                 showMessage.error(`Bad Request: ${error.response.data.error.message}`);
@@ -455,7 +455,7 @@ const UserDashboard = () => {
             switch (error.response.status) {
               case 401:
                 showMessage.error(`Unauthorized: Please logout and clean your user token.`);
-                clearSession();
+                clearSession(error?.response?.data?.error?.message);
                 break;
               case 400:
                 showMessage.error(`Bad Request: ${error.response.data.error.message}`);
@@ -484,7 +484,7 @@ const UserDashboard = () => {
         switch (error.response.status) {
           case 401:
             showMessage.error(`Unauthorized: Please logout and clean your user token.`);
-            clearSession();
+            clearSession(error?.response?.data?.error?.message);
             break;
           case 400:
             showMessage.error(`Bad Request: ${error.response.data.error.message}`);
@@ -527,7 +527,7 @@ const UserDashboard = () => {
             switch (error.response.status) {
               case 401:
                 showMessage.error(`Unauthorized: Please logout and clean your user token.`);
-                clearSession();
+                clearSession(error?.response?.data?.error?.message);
                 break;
               case 400:
                 showMessage.error(`Bad Request: ${error.response.data.error.message}`);
@@ -554,7 +554,7 @@ const UserDashboard = () => {
         switch (error.response.status) {
           case 401:
             showMessage.error(`Unauthorized: Please logout and clean your user token.`);
-            clearSession();
+            clearSession(error?.response?.data?.error?.message);
             break;
           case 400:
             showMessage.error(`Bad Request: ${error.response.data.error.message}`);

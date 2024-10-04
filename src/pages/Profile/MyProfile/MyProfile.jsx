@@ -34,8 +34,7 @@ const MyProfile = () => {
           switch (error.response.status) {
             case 401:
               showMessage.error(`Unauthorized: Please logout and clean your user token.`);
-             clearSession();
-              break;
+              clearSession(error?.response?.data?.error?.message);              break;
             case 400:
               showMessage.error(`Bad Request: ${error.response.data.error.message}`);
               break;

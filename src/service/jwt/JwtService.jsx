@@ -33,9 +33,9 @@ export const getEmail = () => {
   const decodedToken = jwtDecode(token);
   return decodedToken.sub;  // Assuming the token contains a 'role' field
 };
-export const clearSession = () => {
+export const clearSession = (message) => {
   localStorage.removeItem('userToken');
-  localStorage.setItem('errorMessages', 'Something went wrong. Please refresh the page and log in again.');
+  localStorage.setItem('errorMessages', `Something went wrong. Please refresh the page and log in again.\n possible issue ${message}`);
   window.location.href = '/';
 }
 
